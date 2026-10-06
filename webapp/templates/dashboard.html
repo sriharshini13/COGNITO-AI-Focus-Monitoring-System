@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0">
+<title>COGNITO — Dashboard</title>
+<style>
+* { margin:0; padding:0;
+    box-sizing:border-box; }
+body {
+  font-family:'Segoe UI',sans-serif;
+  background:#0f0f1a;
+  color:#cdd6f4;
+  min-height:100vh;
+}
+
+/* ── Navbar ── */
+nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(15,15,26,.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid
+    rgba(69,71,90,.4);
+  padding:0 24px; height:56px;
+  display:flex; align-items:center;
+  justify-content:space-between;
+}
+.nav-logo {
+  font-size:18px; font-weight:900;
+  color:#89b4fa; letter-spacing:3px;
+  text-decoration:none;
+}
+.nav-links { display:flex; gap:3px; }
+.nav-link {
+  padding:6px 12px; border-radius:7px;
+  color:#6c6f85; text-decoration:none;
+  font-size:12px; transition:all .2s;
+}
+.nav-link:hover,
+.nav-link.active {
+  background:rgba(137,180,250,.1);
+  color:#89b4fa;
+}
+.nav-right {
+  display:flex; align-items:center;
+  gap:10px;
+}
+.nav-user {
+  display:flex; align-items:center;
+  gap:7px; padding:4px 10px 4px 5px;
+  background:rgba(49,50,68,.5);
+  border:1px solid rgba(69,71,90,.4);
+  border-radius:99px;
+  text-decoration:none; font-size:12px;
+  color:#cdd6f4; transition:all .2s;
+}
+.nav-user:hover {
+  border-color:rgba(137,180,250,.3);
+}
+.nav-av {
+  width:26px; height:26px;
+  border-radius:50%;
+  background:linear-gradient(
+    135deg,#89b4fa,#cba6f7);
+  display:flex; align-items:center;
+  justify-content:center;
+  font-size:11px; font-weight:700;
+  color:#1e1e2e; overflow:hidden;
+}
+.nav-av img {
+  width:100%; height:100%;
+  object-fit:cover;
+}
+
+/* ── Page ── */
+.page {
+  max-width:1200px;
+  margin:0 auto;
+  padding:24px 20px 48px;
+}
+.page-title {
+  font-size:24px; font-weight:800;
+  color:#89b4fa; margin-bottom:4px;
+}
+.page-sub {
+  font-size:12px; color:#6c6f85;
+  margin-bottom:24px;
+}
+
+/* ── Stat cards ── */
+.stat-row {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px; margin-bottom:24px;
+}
+@media(max-width:800px){
+  .stat-row{grid-template-columns:
+    repeat(2,1fr);}
+}
+.scard {
+  background:rgba(30,30,46,.8);
+  border:1px solid rgba(69,71,90,.4);
+  border-radius:13px; padding:18px;
+  text-align:center;
+}
+.scard .sv {
+  font-size:30px; font-weight:800;
+  margin-bottom:4px; display:block;
+}
+.scard .sl {
+  font-size:10px; color:#6c6f85;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+/* ── Section ── */
+.section { margin-bottom:26px; }
+.sec-title {
+  font-size:14px; font-weight:700;
+  color:#89b4fa; margin-bottom:14px;
+  padding-bottom:8px;
+  border-bottom:1px solid
+    rgba(69,71,90,.35);
+  display:flex; align-items:center;
+  gap:7px;
+}
+
+/* ── Grid helpers ── */
+.g2 {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.g3 {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:16px;
+}
+@media(max-width:900px){
+  .g2,.g3{grid-template-columns:1fr;}
+}
+
+/* ── Card ── */
+.card {
+  background:rgba(30,30,46,.8);
+  border:1px solid rgba(69,71,90,.4);
+  border-radius:13px; padding:18px;
+}
+.card-title {
+  font-size:11px; color:#6c6f85;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:14px; font-weight:600;
+}
+
+/* ── Rec cards ── */
+.rec {
+  background:rgba(30,30,46,.8);
+  border-left:3px solid #89b4fa;
+  border-radius:10px;
+  padding:14px 16px;
+  margin-bottom:10px;
+}
+.rec.green  { border-color:#a6e3a1; }
+.rec.orange { border-color:#fab387; }
+.rec.red    { border-color:#f38ba8; }
+.rec.purple { border-color:#cba6f7; }
+.rec-title {
+  font-size:11px; font-weight:700;
+  color:#cdd6f4; margin-bottom:4px;
+}
+.rec-val {
+  font-size:19px; font-weight:800;
+  margin-bottom:3px;
+}
+.rec-tip {
+  font-size:11px; color:#9399b2;
+  line-height:1.5;
+}
+
+/* ── Tip items ── */
+.tip-item {
+  background:rgba(15,15,26,.6);
+  border-radius:7px;
+  padding:10px 12px;
+  margin-bottom:7px;
+  font-size:12px; color:#cdd6f4;
+  line-height:1.5;
+  border-left:2px solid #89b4fa;
+}
+
+/* ── Progress bars ── */
+.prow {
+  display:flex; align-items:center;
+  gap:9px; margin-bottom:9px;
+}
+.prow-lbl {
+  font-size:11px; color:#9399b2;
+  width:65px;
+}
+.prow-bg {
+  flex:1; height:7px;
+  background:rgba(49,50,68,.8);
+  border-radius:99px; overflow:hidden;
+}
+.prow-fill {
+  height:100%; border-radius:99px;
+  transition:width .8s ease;
+}
+.prow-val {
+  font-size:10px; color:#6c6f85;
+  width:32px; text-align:right;
+}
+
+/* ── Compare table ── */
+.ctbl {
+  width:100%; border-collapse:collapse;
+}
+.ctbl th {
+  background:rgba(15,15,26,.6);
+  padding:9px 12px;
+  font-size:10px; color:#6c6f85;
+  text-align:left;
+  text-transform:uppercase;
+}
+.ctbl td {
+  padding:9px 12px; font-size:12px;
+  border-bottom:1px solid
+    rgba(69,71,90,.4);
+}
+.ctbl tr:last-child td{
+  border-bottom:none;
+}
+.best  { color:#a6e3a1; font-weight:700;}
+.worst { color:#f38ba8; font-weight:700;}
+
+/* ── Grade badge ── */
+.grade {
+  display:inline-block;
+  padding:3px 11px; border-radius:99px;
+  font-weight:800; font-size:13px;
+}
+.grade-A{background:#a6e3a1;color:#1e1e2e}
+.grade-B{background:#89b4fa;color:#1e1e2e}
+.grade-C{background:#fab387;color:#1e1e2e}
+.grade-D{background:#f38ba8;color:#1e1e2e}
+.grade-F{background:#6c6f85;color:#1e1e2e}
+
+/* ── Heatmap ── */
+.heatmap-wrap {
+  overflow-x:auto;
+}
+.heatmap-table {
+  border-collapse:separate;
+  border-spacing:3px;
+  min-width:520px;
+}
+.hm-hour-label {
+  font-size:9px; color:#45475a;
+  text-align:center;
+  padding:0 2px;
+}
+.hm-day-label {
+  font-size:10px; color:#6c6f85;
+  padding-right:8px;
+  white-space:nowrap;
+}
+.hm-cell {
+  width:26px; height:22px;
+  border-radius:4px;
+  background:rgba(49,50,68,.4);
+  cursor:default;
+  transition:transform .15s;
+  position:relative;
+}
+.hm-cell:hover {
+  transform:scale(1.3);
+  z-index:10;
+}
+.hm-legend {
+  display:flex; align-items:center;
+  gap:6px; margin-top:10px;
+  font-size:10px; color:#6c6f85;
+}
+.hm-legend-bar {
+  display:flex; gap:2px;
+}
+.hm-legend-seg {
+  width:18px; height:9px;
+  border-radius:2px;
+}
+
+/* ── Session comparison ── */
+.cmp-row {
+  display:flex; align-items:center;
+  gap:10px; margin-bottom:10px;
+  padding:10px 12px;
+  background:rgba(15,15,26,.5);
+  border-radius:8px;
+}
+.cmp-label {
+  font-size:11px; color:#9399b2;
+  width:100px; flex-shrink:0;
+}
+.cmp-bars {
+  flex:1; display:flex;
+  flex-direction:column; gap:4px;
+}
+.cmp-bar-row {
+  display:flex; align-items:center;
+  gap:6px;
+}
+.cmp-bar-tag {
+  font-size:9px; color:#6c6f85;
+  width:28px;
+}
+.cmp-bar-bg {
+  flex:1; height:6px;
+  background:rgba(49,50,68,.8);
+  border-radius:99px; overflow:hidden;
+}
+.cmp-bar-fill {
+  height:100%; border-radius:99px;
+  transition:width .6s ease;
+}
+.cmp-val {
+  font-size:10px; font-weight:700;
+  width:32px; text-align:right;
+}
+
+/* ── No data ── */
+.no-data {
+  text-align:center; padding:36px;
+  color:#6c6f85; font-size:13px;
+}
+.no-data .ni {
+  font-size:36px; margin-bottom:10px;
+}
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+  <a class="nav-logo" href="/">COGNITO</a>
+  <div class="nav-links">
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link active"
+       href="/dashboard">Dashboard</a>
+    <a class="nav-link"
+       href="/report">Reports</a>
+    <a class="nav-link"
+       href="/leaderboard">🏆</a>
+  </div>
+  <div class="nav-right">
+    <a class="nav-user" href="/profile">
+      <div class="nav-av">
+        {% if user and user.photo %}
+          <img src="{{ user.photo }}"
+               alt="">
+        {% else %}
+          {{ user.name[0].upper()
+             if user else 'U' }}
+        {% endif %}
+      </div>
+      {{ user.name.split()[0]
+         if user else 'User' }}
+    </a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-title">
+    📊 Analytics Dashboard
+  </div>
+  <div class="page-sub">
+    Your focus patterns, trends
+    and personalised recommendations
+  </div>
+
+  {% set rec  = report.recommendations %}
+  {% set ana  = report.analytics %}
+  {% set bests = ana.bests %}
+  {% set bvw   = ana.best_vs_worst %}
+  {% set daily = ana.daily %}
+  {% set cmp   = ana.comparison %}
+
+  {% if not bests %}
+  <div class="no-data">
+    <div class="ni">📭</div>
+    <p>No sessions yet!<br>
+       Start monitoring to see analytics.
+    </p>
+    <br>
+    <a href="/"
+       style="color:#89b4fa">
+      ← Choose a Profile
+    </a>
+  </div>
+
+  {% else %}
+
+  <!-- ── Personal Bests ── -->
+  <div class="stat-row">
+    <div class="scard">
+      <span class="sv"
+            style="color:#a6e3a1">
+        {{ bests.best_session.score }}
+      </span>
+      <div class="sl">Best Score</div>
+    </div>
+    <div class="scard">
+      <span class="sv"
+            style="color:#fab387">
+        {{ bests.current_streak }}🔥
+      </span>
+      <div class="sl">Day Streak</div>
+    </div>
+    <div class="scard">
+      <span class="sv"
+            style="color:#89b4fa">
+        {{ bests.total_sessions }}
+      </span>
+      <div class="sl">Total Sessions</div>
+    </div>
+    <div class="scard">
+      <span class="sv"
+            style="color:#cba6f7">
+        {{ bests.total_study_hrs }}h
+      </span>
+      <div class="sl">Study Hours</div>
+    </div>
+  </div>
+
+  <!-- ── Recommendations ── -->
+  <div class="section">
+    <div class="sec-title">
+      💡 Recommendations
+    </div>
+    <div class="g3">
+
+      <div>
+        <div class="rec green">
+          <div class="rec-title">
+            ⏰ Best Study Time
+          </div>
+          <div class="rec-val"
+               style="color:#a6e3a1">
+            {% if rec.best_study_time %}
+              {{ rec.best_study_time
+                 .best_hour_str }}
+            {% else %}N/A{% endif %}
+          </div>
+          <div class="rec-tip">
+            {% if rec.best_study_time %}
+              Avg score
+              {{ rec.best_study_time
+                 .avg_score }}/100
+              at this time
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="rec orange">
+          <div class="rec-title">
+            ☕ Break Interval
+          </div>
+          <div class="rec-val"
+               style="color:#fab387">
+            Every
+            {{ rec.break_interval
+               .recommended_mins }} mins
+          </div>
+          <div class="rec-tip">
+            {{ rec.break_interval.tip }}
+          </div>
+        </div>
+
+        <div class="rec red">
+          <div class="rec-title">
+            ⚠️ Distraction Trigger
+          </div>
+          <div class="rec-val"
+               style="color:#f38ba8">
+            {{ rec.distraction_emotion
+               .worst_emotion }}
+          </div>
+          <div class="rec-tip">
+            {{ rec.distraction_emotion
+               .tip }}
+          </div>
+        </div>
+
+        <div class="rec purple">
+          <div class="rec-title">
+            🔮 Today's Prediction
+          </div>
+          <div class="rec-val"
+               style="color:#cba6f7">
+            {{ rec.predicted_today
+               .predicted }}/100
+          </div>
+          <div class="rec-tip">
+            {{ rec.predicted_today
+               .confidence }} confidence
+            — {{ rec.predicted_today.tip }}
+          </div>
+        </div>
+      </div>
+
+      <div style="grid-column:span 2">
+        <div class="card">
+          <div class="card-title">
+            📈 Weekly Tips
+          </div>
+          {% for tip in
+             rec.weekly_tips.tips %}
+          <div class="tip-item">
+            {{ tip }}
+          </div>
+          {% endfor %}
+          <div style="font-size:11px;
+               color:#6c6f85;
+               margin-top:10px">
+            This week avg:
+            <strong style="color:#cdd6f4">
+              {{ rec.weekly_tips
+                 .this_week_avg }}
+            </strong>
+            &nbsp;vs last week:
+            <strong style="color:#cdd6f4">
+              {{ rec.weekly_tips
+                 .last_week_avg }}
+            </strong>
+            {% if rec.weekly_tips.change
+               > 0 %}
+              <span style="color:#a6e3a1">
+                (+{{ rec.weekly_tips
+                     .change }}) ↑
+              </span>
+            {% elif rec.weekly_tips.change
+               < 0 %}
+              <span style="color:#f38ba8">
+                ({{ rec.weekly_tips
+                    .change }}) ↓
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Daily & Weekly ── -->
+  <div class="section">
+    <div class="sec-title">
+      📅 Daily & Weekly
+    </div>
+    <div class="g2">
+
+      <!-- Daily summary -->
+      <div class="card">
+        <div class="card-title">
+          Today vs Yesterday
+        </div>
+        {% if daily.today %}
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;
+               color:#89b4fa;
+               margin-bottom:7px;
+               font-weight:600">
+            Today — {{ daily.date }}
+          </div>
+          <div class="prow">
+            <div class="prow-lbl">Score</div>
+            <div class="prow-bg">
+              <div class="prow-fill"
+                   style="width:{{
+                     daily.today.avg_prod
+                   }}%;background:#89b4fa">
+              </div>
+            </div>
+            <div class="prow-val">
+              {{ daily.today.avg_prod }}
+            </div>
+          </div>
+          <div class="prow">
+            <div class="prow-lbl">Focus</div>
+            <div class="prow-bg">
+              <div class="prow-fill"
+                   style="width:{{
+                     daily.today.avg_focus
+                   }}%;background:#a6e3a1">
+              </div>
+            </div>
+            <div class="prow-val">
+              {{ daily.today.avg_focus }}%
+            </div>
+          </div>
+          <div style="font-size:10px;
+               color:#6c6f85">
+            {{ daily.today.sessions }}
+            session(s) today,
+            {{ daily.today.total_dist }}
+            distraction(s)
+          </div>
+        </div>
+        {% else %}
+        <div style="font-size:12px;
+             color:#6c6f85;
+             margin-bottom:14px">
+          No sessions today yet
+        </div>
+        {% endif %}
+
+        {% if daily.yesterday %}
+        <div style="border-top:1px solid
+             rgba(69,71,90,.35);
+             padding-top:12px">
+          <div style="font-size:11px;
+               color:#6c6f85;
+               margin-bottom:7px">
+            Yesterday
+          </div>
+          <div class="prow">
+            <div class="prow-lbl">Score</div>
+            <div class="prow-bg">
+              <div class="prow-fill"
+                   style="width:{{
+                     daily.yesterday
+                     .avg_prod
+                   }}%;background:
+                     #45475a">
+              </div>
+            </div>
+            <div class="prow-val">
+              {{ daily.yesterday.avg_prod }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Weekly chart -->
+      <div class="card">
+        <div class="card-title">
+          7-Day Productivity
+        </div>
+        <canvas id="weeklyChart"
+                height="150"></canvas>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Heatmap ── -->
+  <div class="section">
+    <div class="sec-title">
+      🗓️ Activity Heatmap
+    </div>
+    <div class="card">
+      <div class="card-title">
+        Productivity by Day & Hour
+      </div>
+      {% if ana.heatmap %}
+      <div class="heatmap-wrap">
+        <table class="heatmap-table"
+               id="heatmapTable">
+        </table>
+      </div>
+      <div class="hm-legend">
+        <span>Less</span>
+        <div class="hm-legend-bar">
+          <div class="hm-legend-seg"
+               style="background:
+                 rgba(49,50,68,.4)">
+          </div>
+          <div class="hm-legend-seg"
+               style="background:
+                 rgba(243,139,168,.4)">
+          </div>
+          <div class="hm-legend-seg"
+               style="background:
+                 rgba(250,179,135,.5)">
+          </div>
+          <div class="hm-legend-seg"
+               style="background:
+                 rgba(166,227,161,.5)">
+          </div>
+          <div class="hm-legend-seg"
+               style="background:
+                 rgba(166,227,161,.9)">
+          </div>
+        </div>
+        <span>More</span>
+      </div>
+      {% else %}
+      <div class="no-data"
+           style="padding:20px">
+        Complete more sessions to
+        see the heatmap
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Session Comparison ── -->
+  <div class="section">
+    <div class="sec-title">
+      🔄 Session Comparison
+    </div>
+    {% if cmp %}
+    <div class="card">
+      <div class="card-title">
+        Last Session vs Previous
+        &nbsp;—&nbsp;
+        <span style="color:#89b4fa">
+          {{ cmp.this_date }}
+        </span>
+        <span class="grade
+             grade-{{ cmp.this_grade }}"
+             style="margin-left:6px">
+          {{ cmp.this_grade }}
+        </span>
+        &nbsp;vs&nbsp;
+        <span style="color:#6c6f85">
+          {{ cmp.last_date }}
+        </span>
+        <span class="grade
+             grade-{{ cmp.last_grade }}"
+             style="margin-left:6px">
+          {{ cmp.last_grade }}
+        </span>
+      </div>
+
+      {% set metrics = [
+        ('Productivity',
+         'avg_productivity',
+         '#89b4fa'),
+        ('High Focus %',
+         'focus_high_pct',
+         '#a6e3a1'),
+        ('Engaged %',
+         'emotion_engaged_pct',
+         '#cba6f7'),
+        ('Low Focus %',
+         'focus_low_pct',
+         '#f38ba8'),
+      ] %}
+
+      {% for label, key, color
+         in metrics %}
+      <div class="cmp-row">
+        <div class="cmp-label">
+          {{ label }}
+        </div>
+        <div class="cmp-bars">
+          <div class="cmp-bar-row">
+            <div class="cmp-bar-tag">
+              This
+            </div>
+            <div class="cmp-bar-bg">
+              <div class="cmp-bar-fill"
+                   style="width:{{
+                     cmp.this[key]
+                   }}%;background:
+                     {{ color }}">
+              </div>
+            </div>
+            <div class="cmp-val"
+                 style="color:{{ color }}">
+              {{ cmp.this[key] }}
+            </div>
+          </div>
+          <div class="cmp-bar-row">
+            <div class="cmp-bar-tag"
+                 style="color:#45475a">
+              Prev
+            </div>
+            <div class="cmp-bar-bg">
+              <div class="cmp-bar-fill"
+                   style="width:{{
+                     cmp.last[key]
+                   }}%;background:
+                     rgba(69,71,90,.7)">
+              </div>
+            </div>
+            <div class="cmp-val"
+                 style="color:#6c6f85">
+              {{ cmp.last[key] }}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+      <div class="no-data"
+           style="padding:20px">
+        Complete 2+ sessions to see
+        comparison
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Monthly & Best vs Worst ── -->
+  <div class="section">
+    <div class="sec-title">
+      📆 Monthly & Best vs Worst
+    </div>
+    <div class="g2">
+
+      <!-- Monthly -->
+      <div class="card">
+        <div class="card-title">
+          {% if ana.monthly %}
+            {{ ana.monthly.month }}
+          {% else %}This Month{% endif %}
+        </div>
+        {% if ana.monthly %}
+        <div style="display:grid;
+             grid-template-columns:
+               1fr 1fr;
+             gap:12px;
+             margin-bottom:14px">
+          <div style="text-align:center">
+            <div style="font-size:26px;
+                 font-weight:800;
+                 color:#89b4fa">
+              {{ ana.monthly.avg_prod }}
+            </div>
+            <div style="font-size:10px;
+                 color:#6c6f85">
+              Avg Score
+            </div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:26px;
+                 font-weight:800;
+                 color:#a6e3a1">
+              {{ ana.monthly
+                 .total_study_hrs }}h
+            </div>
+            <div style="font-size:10px;
+                 color:#6c6f85">
+              Study Hours
+            </div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:26px;
+                 font-weight:800;
+                 color:#fab387">
+              {{ ana.monthly
+                 .total_sessions }}
+            </div>
+            <div style="font-size:10px;
+                 color:#6c6f85">
+              Sessions
+            </div>
+          </div>
+          <div style="text-align:center">
+            <span class="grade grade-{{
+              ana.monthly.best_grade }}"
+                  style="font-size:18px">
+              {{ ana.monthly.best_grade }}
+            </span>
+            <div style="font-size:10px;
+                 color:#6c6f85;
+                 margin-top:3px">
+              Best Grade
+            </div>
+          </div>
+        </div>
+        <canvas id="monthlyChart"
+                height="110"></canvas>
+        {% else %}
+        <div class="no-data"
+             style="padding:20px">
+          No sessions this month
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Best vs Worst -->
+      <div class="card">
+        <div class="card-title">
+          Best vs Worst Session
+        </div>
+        {% if bvw %}
+        <table class="ctbl">
+          <tr>
+            <th>Metric</th>
+            <th style="color:#a6e3a1">
+              Best
+            </th>
+            <th style="color:#f38ba8">
+              Worst
+            </th>
+          </tr>
+          <tr>
+            <td>Date</td>
+            <td class="best">
+              {{ bvw.best.date }}
+            </td>
+            <td class="worst">
+              {{ bvw.worst.date }}
+            </td>
+          </tr>
+          <tr>
+            <td>Score</td>
+            <td class="best">
+              {{ bvw.best.productivity }}
+            </td>
+            <td class="worst">
+              {{ bvw.worst.productivity }}
+            </td>
+          </tr>
+          <tr>
+            <td>Focus High</td>
+            <td class="best">
+              {{ bvw.best.focus_high }}%
+            </td>
+            <td class="worst">
+              {{ bvw.worst.focus_high }}%
+            </td>
+          </tr>
+          <tr>
+            <td>Engaged</td>
+            <td class="best">
+              {{ bvw.best.engaged }}%
+            </td>
+            <td class="worst">
+              {{ bvw.worst.engaged }}%
+            </td>
+          </tr>
+          <tr>
+            <td>Distractions</td>
+            <td class="best">
+              {{ bvw.best.distractions }}
+            </td>
+            <td class="worst">
+              {{ bvw.worst.distractions }}
+            </td>
+          </tr>
+          <tr>
+            <td>Duration</td>
+            <td class="best">
+              {{ bvw.best.duration_mins }}m
+            </td>
+            <td class="worst">
+              {{ bvw.worst.duration_mins }}m
+            </td>
+          </tr>
+        </table>
+        <div style="text-align:center;
+             margin-top:12px;
+             font-size:12px;
+             color:#6c6f85">
+          Gap between best & worst:
+          <strong style="color:#cdd6f4">
+            {{ bvw.difference }} pts
+          </strong>
+        </div>
+        {% else %}
+        <div class="no-data"
+             style="padding:20px">
+          Need 2+ sessions
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js">
+</script>
+<script>
+
+/* ── Weekly chart ── */
+{% if ana.weekly %}
+const wLabels = [];
+const wValues = [];
+{% for date, data in ana.weekly.items() %}
+wLabels.push("{{ date[5:] }}");
+wValues.push(
+  {{ data.avg_prod if data else 0 }});
+{% endfor %}
+
+new Chart(
+  document.getElementById('weeklyChart')
+          .getContext('2d'), {
+  type:'bar',
+  data:{
+    labels: wLabels,
+    datasets:[{
+      data: wValues,
+      backgroundColor: wValues.map(v=>
+        v>=70?'rgba(166,227,161,.7)':
+        v>=50?'rgba(250,179,135,.7)':
+              'rgba(243,139,168,.6)'),
+      borderRadius:5,
+      borderSkipped:false,
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{
+        ticks:{color:'#6c6f85',
+          font:{size:9}},
+        grid:{display:false}
+      },
+      y:{
+        min:0,max:100,
+        ticks:{color:'#6c6f85',
+          font:{size:9}},
+        grid:{color:'rgba(69,71,90,.25)'}
+      }
+    }
+  }
+});
+{% endif %}
+
+/* ── Monthly chart ── */
+{% if ana.monthly and
+     ana.monthly.weekly_breakdown %}
+const mLabels = [];
+const mValues = [];
+{% for wk, data in
+   ana.monthly.weekly_breakdown
+   .items() %}
+mLabels.push("{{ wk }}");
+mValues.push({{ data.avg_prod }});
+{% endfor %}
+
+new Chart(
+  document.getElementById('monthlyChart')
+          .getContext('2d'), {
+  type:'line',
+  data:{
+    labels: mLabels,
+    datasets:[{
+      data: mValues,
+      borderColor:'#89b4fa',
+      backgroundColor:'rgba(137,180,250,.1)',
+      borderWidth:2,
+      fill:true, tension:0.4,
+      pointRadius:4,
+      pointBackgroundColor:'#89b4fa'
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{color:'#6c6f85',
+        font:{size:9}},
+        grid:{display:false}},
+      y:{min:0,max:100,
+        ticks:{color:'#6c6f85',
+          font:{size:9}},
+        grid:{color:
+          'rgba(69,71,90,.25)'}}
+    }
+  }
+});
+{% endif %}
+
+/* ── Heatmap ── */
+{% if ana.heatmap %}
+(function(){
+  const hm   = {{ ana.heatmap | tojson }};
+  const days  = ['Mon','Tue','Wed',
+                 'Thu','Fri','Sat','Sun'];
+  const hours = [];
+  for(let h=6;h<24;h++) hours.push(h);
+
+  function fmtH(h){
+    if(h===0) return '12a';
+    if(h<12)  return h+'a';
+    if(h===12) return '12p';
+    return (h-12)+'p';
+  }
+  function hmColor(v){
+    if(v===null || v===undefined)
+      return 'rgba(49,50,68,.35)';
+    if(v>=80)
+      return 'rgba(166,227,161,.85)';
+    if(v>=65)
+      return 'rgba(166,227,161,.55)';
+    if(v>=50)
+      return 'rgba(250,179,135,.55)';
+    if(v>=35)
+      return 'rgba(243,139,168,.45)';
+    return 'rgba(243,139,168,.25)';
+  }
+
+  const tbl =
+    document.getElementById(
+      'heatmapTable');
+  if(!tbl) return;
+
+  /* Hour header row */
+  let hdr = '<tr><td></td>';
+  hours.forEach(h=>{
+    if(h%2===0)
+      hdr += `<td class="hm-hour-label"
+        colspan="1">${fmtH(h)}</td>`;
+    else
+      hdr += '<td></td>';
+  });
+  hdr += '</tr>';
+
+  /* Day rows */
+  let rows = '';
+  days.forEach(day=>{
+    rows +=
+      `<tr><td class="hm-day-label">
+         ${day}</td>`;
+    hours.forEach(h=>{
+      const v = hm[day]
+        ? hm[day][h] : null;
+      const bg  = hmColor(v);
+      const tip = v!==null && v!==undefined
+        ? `${day} ${fmtH(h)}: ${v}/100`
+        : `${day} ${fmtH(h)}: no data`;
+      rows +=
+        `<td class="hm-cell"
+          style="background:${bg}"
+          title="${tip}"></td>`;
+    });
+    rows += '</tr>';
+  });
+
+  tbl.innerHTML = hdr + rows;
+})();
+{% endif %}
+
+</script>
+</body>
+</html>

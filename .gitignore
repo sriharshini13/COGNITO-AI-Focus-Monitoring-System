@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# VS Code
+.vscode/
+
+# Personal / generated data
+dataset/
+frames/
+registered_faces/
+session_logs/
+reports/
+
+# Generated images / outputs
+*.png
+*.jpg
+*.jpeg
+
+# Environment / secrets
+features/
+*.pptx
+*.pdf
+.env
+.env.*
+
+# Temporary files
+*.tmp
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

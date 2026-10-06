@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNITO — Reports</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',sans-serif; background:#0f0f1a; color:#cdd6f4; min-height:100vh; }
+nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(15,15,26,0.9); backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(69,71,90,0.4);
+  padding:0 32px; height:56px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.nav-logo { font-size:18px; font-weight:900; color:#89b4fa; letter-spacing:3px; text-decoration:none; }
+.nav-links { display:flex; gap:4px; }
+.nav-link { padding:6px 14px; border-radius:8px; color:#6c6f85; text-decoration:none; font-size:13px; transition:all 0.2s; }
+.nav-link:hover, .nav-link.active { background:rgba(137,180,250,0.12); color:#89b4fa; }
+.nav-user { display:flex; align-items:center; gap:8px; font-size:13px; color:#9399b2; }
+.nav-avatar { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#89b4fa,#cba6f7); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#1e1e2e; overflow:hidden; }
+.nav-avatar img { width:100%; height:100%; object-fit:cover; }
+
+/* ── Page ── */
+.page { max-width:1100px; margin:0 auto; padding:28px 24px 60px; }
+.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+.page-title { font-size:26px; font-weight:800; color:#cdd6f4; margin-bottom:4px; }
+.page-sub   { font-size:13px; color:#6c6f85; }
+.header-actions { display:flex; gap:10px; flex-wrap:wrap; }
+.export-btn {
+  display:flex; align-items:center; gap:7px; padding:9px 18px;
+  background:rgba(166,227,161,0.1); border:1px solid rgba(166,227,161,0.25);
+  border-radius:9px; color:#a6e3a1; font-size:12px; font-weight:700;
+  cursor:pointer; text-decoration:none; transition:all 0.2s;
+}
+.export-btn:hover { background:rgba(166,227,161,0.2); transform:translateY(-1px); }
+
+/* ── Summary ── */
+.summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+@media(max-width:700px) { .summary-grid { grid-template-columns:repeat(2,1fr); } }
+.sum-card {
+  background:rgba(30,30,46,0.8); backdrop-filter:blur(12px);
+  border:1px solid rgba(69,71,90,0.4); border-radius:14px; padding:18px;
+  text-align:center; transition:all 0.3s; position:relative; overflow:hidden;
+}
+.sum-card::after { content:''; position:absolute; top:0; right:0; width:60px; height:60px; background:radial-gradient(circle at top right, var(--c,rgba(137,180,250,0.1)) 0%, transparent 70%); }
+.sum-card:hover { border-color:var(--c); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
+.sum-icon  { font-size:24px; margin-bottom:6px; }
+.sum-val   { font-size:28px; font-weight:900; color:var(--c); margin-bottom:2px; }
+.sum-label { font-size:10px; color:#6c6f85; text-transform:uppercase; letter-spacing:1px; }
+
+/* ── Filter bar ── */
+.filter-bar { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; align-items:center; }
+.filter-btn {
+  padding:6px 16px; border-radius:20px; border:1px solid rgba(69,71,90,0.5);
+  background:rgba(49,50,68,0.5); color:#9399b2; font-size:12px; font-weight:600;
+  cursor:pointer; transition:all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active { background:rgba(137,180,250,0.15); border-color:rgba(137,180,250,0.4); color:#89b4fa; }
+.filter-btn.range-active { background:rgba(203,166,247,.15); border-color:rgba(203,166,247,.4); color:#cba6f7; }
+
+/* ── Search ── */
+.search-row { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+.search-input {
+  padding:7px 14px; border-radius:8px; border:1px solid rgba(69,71,90,0.5);
+  background:rgba(49,50,68,0.5); color:#cdd6f4; font-size:12px;
+  width:200px; outline:none; transition:all 0.2s;
+}
+.search-input:focus { border-color:rgba(137,180,250,0.4); background:rgba(49,50,68,0.8); }
+.result-count { font-size:11px; color:#6c6f85; margin-left:auto; }
+.result-count span { color:#89b4fa; font-weight:700; }
+
+/* ── Table ── */
+.table-wrap { background:rgba(30,30,46,0.7); backdrop-filter:blur(12px); border:1px solid rgba(69,71,90,0.4); border-radius:16px; overflow:hidden; }
+table { width:100%; border-collapse:collapse; }
+thead th { background:rgba(15,15,26,0.7); padding:11px 16px; font-size:10px; color:#6c6f85; text-align:left; text-transform:uppercase; letter-spacing:1px; font-weight:600; cursor:pointer; user-select:none; transition:color 0.2s; }
+thead th:hover { color:#89b4fa; }
+tbody tr { border-bottom:1px solid rgba(69,71,90,0.2); cursor:pointer; transition:background 0.15s; }
+tbody tr:hover { background:rgba(49,50,68,0.4); }
+tbody tr:last-child { border-bottom:none; }
+tbody td { padding:11px 16px; font-size:12px; color:#9399b2; }
+
+/* ── Grade ── */
+.grade { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; font-size:12px; font-weight:800; }
+.g-A { background:rgba(166,227,161,0.2); color:#a6e3a1; }
+.g-B { background:rgba(137,180,250,0.2); color:#89b4fa; }
+.g-C { background:rgba(250,179,135,0.2); color:#fab387; }
+.g-D { background:rgba(243,139,168,0.2); color:#f38ba8; }
+.g-F { background:rgba(108,111,133,0.2); color:#6c6f85; }
+
+/* ── Mini bar ── */
+.mbar-wrap { display:flex; align-items:center; gap:8px; }
+.mbar-bg   { width:60px; height:5px; background:rgba(49,50,68,0.8); border-radius:99px; overflow:hidden; }
+.mbar-fill { height:100%; border-radius:99px; }
+
+/* ── Expand row ── */
+.expand-row { display:none; }
+.expand-row.open { display:table-row; }
+.expand-content {
+  padding:20px 24px; background:rgba(15,15,26,0.6);
+  display:grid; grid-template-columns:repeat(5,1fr); gap:16px;
+}
+@media(max-width:800px) { .expand-content { grid-template-columns:repeat(2,1fr); } }
+.exp-block h4 { font-size:10px; color:#6c6f85; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-weight:600; }
+.exp-stat { display:flex; justify-content:space-between; margin-bottom:5px; font-size:11px; padding:4px 0; border-bottom:1px solid rgba(69,71,90,0.15); }
+.exp-stat:last-child { border-bottom:none; }
+.exp-stat-label { color:#6c6f85; }
+.exp-stat-val   { color:#cdd6f4; font-weight:600; }
+
+/* ── Emotion tags ── */
+.etag { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:600; margin:3px; }
+
+/* ── Focus mini bars ── */
+.focus-bar-row  { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.fbr-label { font-size:10px; color:#9399b2; width:45px; }
+.fbr-bg    { flex:1; height:5px; background:rgba(49,50,68,0.8); border-radius:99px; overflow:hidden; }
+.fbr-fill  { height:100%; border-radius:99px; }
+.fbr-val   { font-size:10px; color:#6c6f85; width:28px; text-align:right; }
+
+/* ── Result card ── */
+.result-card { background:rgba(30,30,46,0.6); border-radius:10px; padding:12px; text-align:center; }
+.result-grade { display:inline-flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:14px; font-size:26px; font-weight:900; margin-bottom:8px; }
+.result-msg   { font-size:11px; color:#6c6f85; line-height:1.5; }
+
+/* ── Note display ── */
+.exp-note {
+  background:rgba(137,180,250,.06); border:1px solid rgba(137,180,250,.15);
+  border-radius:8px; padding:10px 12px; font-size:11px; color:#9399b2;
+  font-style:italic; line-height:1.5;
+}
+.exp-note-label { font-size:9px; color:#6c6f85; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+
+/* ── Empty ── */
+.empty { text-align:center; padding:60px; color:#6c6f85; }
+.empty-icon { font-size:48px; display:block; margin-bottom:12px; }
+.nd-link { display:inline-block; margin-top:16px; padding:10px 24px; background:linear-gradient(135deg,#89b4fa,#cba6f7); color:#1e1e2e; border-radius:8px; font-weight:700; font-size:13px; text-decoration:none; transition:all 0.2s; }
+.nd-link:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(137,180,250,0.3); }
+
+/* ── No results ── */
+.no-results { text-align:center; padding:40px; color:#6c6f85; font-size:13px; display:none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">COGNITO</a>
+  <div class="nav-links">
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link" href="/dashboard">Dashboard</a>
+    <a class="nav-link active" href="/report">Reports</a>
+    <a class="nav-link" href="/leaderboard">🏆</a>
+  </div>
+  <div class="nav-user">
+    <div class="nav-avatar">
+      {% if user and user.photo %}<img src="{{ user.photo }}" alt="">
+      {% else %}{{ user.name[0].upper() if user else 'U' }}{% endif %}
+    </div>
+    {{ user.name if user else 'User' }}
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">📋 Session History</div>
+      <div class="page-sub">All your recorded focus sessions</div>
+    </div>
+    <div class="header-actions">
+      <a class="export-btn" href="/api/export_csv" download>⬇️ Export CSV</a>
+    </div>
+  </div>
+
+  {% if sessions %}
+  {% set total  = sessions|length %}
+  {% set avg_p  = (sessions|sum(attribute='avg_productivity')/total)|round(1) %}
+  {% set tot_h  = (sessions|sum(attribute='duration_secs')/3600)|round(1) %}
+  {% set tot_d  = sessions|sum(attribute='total_distractions') %}
+
+  <!-- Summary -->
+  <div class="summary-grid">
+    <div class="sum-card" style="--c:#89b4fa">
+      <div class="sum-icon">📊</div>
+      <div class="sum-val">{{ total }}</div>
+      <div class="sum-label">Total Sessions</div>
+    </div>
+    <div class="sum-card" style="--c:#a6e3a1">
+      <div class="sum-icon">⚡</div>
+      <div class="sum-val">{{ avg_p }}</div>
+      <div class="sum-label">Avg Score</div>
+    </div>
+    <div class="sum-card" style="--c:#cba6f7">
+      <div class="sum-icon">⏱️</div>
+      <div class="sum-val">{{ tot_h }}h</div>
+      <div class="sum-label">Study Time</div>
+    </div>
+    <div class="sum-card" style="--c:#fab387">
+      <div class="sum-icon">⚠️</div>
+      <div class="sum-val">{{ tot_d }}</div>
+      <div class="sum-label">Distractions</div>
+    </div>
+  </div>
+
+  <!-- Grade filter -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterGrade('all',this)">All ({{ total }})</button>
+    <button class="filter-btn" onclick="filterGrade('A',this)">🏆 Grade A</button>
+    <button class="filter-btn" onclick="filterGrade('B',this)">👍 Grade B</button>
+    <button class="filter-btn" onclick="filterGrade('C',this)">😐 Grade C</button>
+    <button class="filter-btn" onclick="filterGrade('D',this)">📉 Grade D+</button>
+    <button class="filter-btn" id="btnThisWeek"  onclick="filterRange('week',this)">📅 This Week</button>
+    <button class="filter-btn" id="btnThisMonth" onclick="filterRange('month',this)">📆 This Month</button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-row">
+    <input class="search-input" id="searchInput" placeholder="🔍 Search date, score, grade..."
+           oninput="applySearch(this.value)">
+    <span class="result-count">Showing <span id="visibleCount">{{ total }}</span> of {{ total }}</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th onclick="sortTbl(0)">#</th>
+          <th onclick="sortTbl(1)">Date ↕</th>
+          <th onclick="sortTbl(2)">Time</th>
+          <th onclick="sortTbl(3)">Duration</th>
+          <th onclick="sortTbl(4)">Score ↕</th>
+          <th onclick="sortTbl(5)">Grade ↕</th>
+          <th onclick="sortTbl(6)">High Focus ↕</th>
+          <th onclick="sortTbl(7)">Dist ↕</th>
+          <th style="width:20px"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        {% for s in sessions %}
+        <tr class="srow"
+            data-grade="{{ s.grade }}"
+            data-date="{{ s.date }}"
+            data-score="{{ s.avg_productivity }}"
+            onclick="toggleExpand({{ loop.index }}, event)">
+          <td style="color:#45475a;font-size:11px">{{ loop.index }}</td>
+          <td style="color:#cdd6f4;font-weight:600">{{ s.date }}</td>
+          <td>{{ s.time[:5] }}</td>
+          <td style="color:#9399b2">{{ s.duration }}</td>
+          <td>
+            <div class="mbar-wrap">
+              <div class="mbar-bg">
+                <div class="mbar-fill" style="width:{{ s.avg_productivity }}%;background:{{ '#a6e3a1' if s.avg_productivity>=70 else '#fab387' if s.avg_productivity>=50 else '#f38ba8' }}"></div>
+              </div>
+              <strong style="color:{{ '#a6e3a1' if s.avg_productivity>=70 else '#fab387' if s.avg_productivity>=50 else '#f38ba8' }}">
+                {{ s.avg_productivity }}
+              </strong>
+            </div>
+          </td>
+          <td><span class="grade g-{{ s.grade }}">{{ s.grade }}</span></td>
+          <td style="color:#a6e3a1;font-weight:600">{{ s.focus_high_pct }}%</td>
+          <td style="color:#fab387">{{ s.total_distractions }}</td>
+          <td style="color:#45475a;font-size:10px">▼</td>
+        </tr>
+
+        <!-- Expand row — NOW WITH 5 COLUMNS INCLUDING NOTE/STREAK/YAWN -->
+        <tr class="expand-row" id="exp-{{ loop.index }}">
+          <td colspan="9">
+            <div class="expand-content">
+
+              <!-- Focus split -->
+              <div class="exp-block">
+                <h4>Focus Split</h4>
+                <div class="focus-bar-row">
+                  <div class="fbr-label">🟢 High</div>
+                  <div class="fbr-bg"><div class="fbr-fill" style="width:{{ s.focus_high_pct }}%;background:#a6e3a1"></div></div>
+                  <div class="fbr-val">{{ s.focus_high_pct }}%</div>
+                </div>
+                <div class="focus-bar-row">
+                  <div class="fbr-label">🟡 Med</div>
+                  <div class="fbr-bg"><div class="fbr-fill" style="width:{{ s.focus_medium_pct }}%;background:#fab387"></div></div>
+                  <div class="fbr-val">{{ s.focus_medium_pct }}%</div>
+                </div>
+                <div class="focus-bar-row">
+                  <div class="fbr-label">🔴 Low</div>
+                  <div class="fbr-bg"><div class="fbr-fill" style="width:{{ s.focus_low_pct }}%;background:#f38ba8"></div></div>
+                  <div class="fbr-val">{{ s.focus_low_pct }}%</div>
+                </div>
+              </div>
+
+              <!-- Emotions -->
+              <div class="exp-block">
+                <h4>Emotions</h4>
+                <span class="etag" style="background:rgba(166,227,161,0.15);color:#a6e3a1">😊 {{ s.emotion_engaged_pct }}%</span>
+                <span class="etag" style="background:rgba(137,180,250,0.15);color:#89b4fa">😴 {{ s.emotion_bored_pct }}%</span>
+                <span class="etag" style="background:rgba(250,179,135,0.15);color:#fab387">😕 {{ s.emotion_confused_pct }}%</span>
+                <span class="etag" style="background:rgba(243,139,168,0.15);color:#f38ba8">😤 {{ s.emotion_frustrated_pct }}%</span>
+              </div>
+
+              <!-- Performance -->
+              <div class="exp-block">
+                <h4>Performance</h4>
+                <div class="exp-stat"><span class="exp-stat-label">Peak Score</span><span class="exp-stat-val" style="color:#cba6f7">{{ s.peak_productivity }}</span></div>
+                <div class="exp-stat"><span class="exp-stat-label">Avg Score</span><span class="exp-stat-val">{{ s.avg_productivity }}</span></div>
+                <div class="exp-stat"><span class="exp-stat-label">Dist/hr</span><span class="exp-stat-val" style="color:#fab387">{{ s.distractions_per_hour }}</span></div>
+                <div class="exp-stat"><span class="exp-stat-label">Duration</span><span class="exp-stat-val">{{ s.duration }}</span></div>
+                {% if s.yawn_count is defined %}
+                <div class="exp-stat"><span class="exp-stat-label">Yawns</span><span class="exp-stat-val" style="color:#fab387">{{ s.yawn_count }}</span></div>
+                {% endif %}
+                {% if s.max_focus_streak is defined %}
+                <div class="exp-stat"><span class="exp-stat-label">Best Streak</span><span class="exp-stat-val" style="color:#f38ba8">🔥 {{ s.max_focus_streak }}</span></div>
+                {% endif %}
+              </div>
+
+              <!-- Result -->
+              <div class="exp-block">
+                <h4>Result</h4>
+                <div class="result-card">
+                  <div class="result-grade g-{{ s.grade }}" style="margin:0 auto">{{ s.grade }}</div>
+                  <div class="result-msg">
+                    {% if s.grade == 'A' %}🌟 Excellent! You were in the zone.
+                    {% elif s.grade == 'B' %}👍 Great work! Solid focus.
+                    {% elif s.grade == 'C' %}💪 Average. Keep pushing!
+                    {% elif s.grade == 'D' %}📈 Needs improvement.
+                    {% else %}🔄 Rough session. Rest and retry!{% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Note -->
+              <div class="exp-block">
+                <h4>📝 Session Note</h4>
+                {% if s.note is defined and s.note %}
+                <div class="exp-note">{{ s.note }}</div>
+                {% else %}
+                <div class="exp-note" style="color:#45475a">No note recorded for this session.</div>
+                {% endif %}
+              </div>
+
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="no-results" id="noResults">😕 No sessions match your filter.</div>
+  </div>
+
+  {% else %}
+  <div class="empty">
+    <span class="empty-icon">📭</span>
+    <p style="font-size:15px;color:#9399b2">No sessions recorded yet!</p>
+    <p style="font-size:13px;margin-top:8px;color:#6c6f85">Start a monitoring session to build your history here.</p>
+    <a class="nd-link" href="/">Start a Session →</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+let activeGrade = 'all';
+let activeRange = null;
+let searchQ     = '';
+
+function getISOWeek() {
+  const now = new Date();
+  const day = now.getDay() || 7;
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - day + 1);
+  return mon.toISOString().slice(0,10);
+}
+function getISOMonth() {
+  return new Date().toISOString().slice(0,7);
+}
+
+function applyFilters() {
+  const rows = document.querySelectorAll('.srow');
+  let visible = 0;
+
+  rows.forEach(row => {
+    const grade = row.dataset.grade;
+    const date  = row.dataset.date;
+    const score = row.dataset.score;
+    const q     = searchQ.toLowerCase();
+
+    let show = true;
+
+    if (activeGrade !== 'all') {
+      if (activeGrade === 'D') show = show && (grade === 'D' || grade === 'F');
+      else show = show && grade === activeGrade;
+    }
+
+    if (activeRange === 'week') {
+      show = show && date >= getISOWeek();
+    } else if (activeRange === 'month') {
+      show = show && date.startsWith(getISOMonth());
+    }
+
+    if (q) {
+      show = show && (
+        date.includes(q) ||
+        grade.toLowerCase().includes(q) ||
+        score.includes(q)
+      );
+    }
+
+    row.style.display = show ? '' : 'none';
+    const exp = row.nextElementSibling;
+    if (exp && exp.classList.contains('expand-row')) {
+      if (!show) { exp.classList.remove('open'); exp.style.display = 'none'; }
+      else exp.style.display = '';
+    }
+    if (show) visible++;
+  });
+
+  document.getElementById('visibleCount').textContent = visible;
+  document.getElementById('noResults').style.display  = visible === 0 ? 'block' : 'none';
+}
+
+function filterGrade(grade, btn) {
+  document.querySelectorAll('.filter-btn:not(#btnThisWeek):not(#btnThisMonth)')
+    .forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeGrade = grade;
+  applyFilters();
+}
+
+function filterRange(range, btn) {
+  if (activeRange === range) {
+    activeRange = null;
+    btn.classList.remove('range-active');
+    // Re-activate 'All' if no grade filter
+    document.querySelector('.filter-btn').classList.add('active');
+  } else {
+    activeRange = range;
+    document.querySelectorAll('#btnThisWeek,#btnThisMonth').forEach(b => b.classList.remove('range-active'));
+    btn.classList.add('range-active');
+  }
+  applyFilters();
+}
+
+function applySearch(q) {
+  searchQ = q;
+  applyFilters();
+}
+
+function toggleExpand(i, event) {
+  const row = document.getElementById('exp-' + i);
+  row.classList.toggle('open');
+}
+
+let sortDir = {};
+function sortTbl(col) {
+  const tbody = document.getElementById('tbody');
+  const rows  = Array.from(tbody.querySelectorAll('.srow'));
+  sortDir[col] = !sortDir[col];
+  rows.sort((a, b) => {
+    const av = a.cells[col].textContent.trim();
+    const bv = b.cells[col].textContent.trim();
+    const an = parseFloat(av), bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return sortDir[col] ? an-bn : bn-an;
+    return sortDir[col] ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  rows.forEach(row => {
+    tbody.appendChild(row);
+    const exp = row.nextElementSibling;
+    if (exp && exp.classList.contains('expand-row')) tbody.appendChild(exp);
+  });
+}
+</script>
+</body>
+</html>

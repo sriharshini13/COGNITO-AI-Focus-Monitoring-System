@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNITO — Login</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f0f1a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ── Animated background ── */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(
+      ellipse at 20% 50%,
+      rgba(137,180,250,0.15) 0%,
+      transparent 60%),
+    radial-gradient(
+      ellipse at 80% 20%,
+      rgba(203,166,247,0.12) 0%,
+      transparent 60%),
+    radial-gradient(
+      ellipse at 60% 80%,
+      rgba(166,227,161,0.08) 0%,
+      transparent 60%);
+  }
+  .bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb1 {
+    width: 400px; height: 400px;
+    background: rgba(137,180,250,0.12);
+    top: -100px; left: -100px;
+    animation-delay: 0s;
+  }
+  .orb2 {
+    width: 350px; height: 350px;
+    background: rgba(203,166,247,0.1);
+    bottom: -80px; right: -80px;
+    animation-delay: 3s;
+  }
+  .orb3 {
+    width: 250px; height: 250px;
+    background: rgba(166,227,161,0.08);
+    top: 50%; left: 50%;
+    animation-delay: 6s;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* ── Main card ── */
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 420px;
+    background: rgba(30,30,46,0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(137,180,250,0.2);
+    border-radius: 24px;
+    padding: 44px 40px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  }
+
+  /* ── Logo ── */
+  .logo-wrap {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .logo-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 20px rgba(137,180,250,0.5));
+  }
+  .logo-text {
+    font-size: 28px;
+    font-weight: 900;
+    color: #89b4fa;
+    letter-spacing: 4px;
+  }
+  .logo-sub {
+    font-size: 12px;
+    color: #6c6f85;
+    margin-top: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    background: rgba(49,50,68,0.6);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #6c6f85;
+    transition: all 0.25s;
+    border: none;
+    background: none;
+  }
+  .tab.active {
+    background: rgba(137,180,250,0.2);
+    color: #89b4fa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* ── Forms ── */
+  .form { display: none; }
+  .form.active { display: block; }
+
+  .field {
+    margin-bottom: 18px;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: #9399b2;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .field input {
+    width: 100%;
+    padding: 13px 16px;
+    background: rgba(49,50,68,0.6);
+    border: 1px solid rgba(69,71,90,0.8);
+    border-radius: 10px;
+    color: #cdd6f4;
+    font-size: 14px;
+    transition: all 0.2s;
+    outline: none;
+  }
+  .field input:focus {
+    border-color: #89b4fa;
+    background: rgba(49,50,68,0.9);
+    box-shadow: 0 0 0 3px rgba(137,180,250,0.1);
+  }
+  .field input::placeholder { color: #45475a; }
+
+  /* ── Password strength ── */
+  .pw-strength {
+    height: 3px;
+    border-radius: 99px;
+    background: #313244;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .pw-fill {
+    height: 100%;
+    border-radius: 99px;
+    width: 0%;
+    transition: all 0.3s;
+  }
+
+  /* ── Submit btn ── */
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg,#89b4fa,#cba6f7);
+    border: none;
+    border-radius: 12px;
+    color: #1e1e2e;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(137,180,250,0.3);
+  }
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+  .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ── Error / success ── */
+  .msg {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .msg.error {
+    background: rgba(243,139,168,0.15);
+    border: 1px solid rgba(243,139,168,0.3);
+    color: #f38ba8;
+    display: block;
+  }
+  .msg.success {
+    background: rgba(166,227,161,0.15);
+    border: 1px solid rgba(166,227,161,0.3);
+    color: #a6e3a1;
+    display: block;
+  }
+
+  /* ── Loading spinner ── */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(30,30,46,0.3);
+    border-top-color: #1e1e2e;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── Features strip ── */
+  .features {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(69,71,90,0.4);
+  }
+  .feat {
+    flex: 1;
+    text-align: center;
+  }
+  .feat .fi { font-size: 20px; margin-bottom: 4px; }
+  .feat p {
+    font-size: 10px;
+    color: #6c6f85;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg">
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+</div>
+
+<!-- Card -->
+<div class="card">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <span class="logo-icon">🧠</span>
+    <div class="logo-text">COGNITO</div>
+    <div class="logo-sub">Focus Analysis System</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active"
+            onclick="switchTab('login')">
+      Sign In
+    </button>
+    <button class="tab"
+            onclick="switchTab('register')">
+      Register
+    </button>
+  </div>
+
+  <!-- Error message -->
+  <div class="msg" id="msgBox"></div>
+
+  <!-- Login form -->
+  <div class="form active" id="loginForm">
+    <div class="field">
+      <label>Username</label>
+      <input type="text"
+             id="loginUser"
+             placeholder="Enter your username"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password"
+             id="loginPass"
+             placeholder="Enter your password"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="submit-btn"
+            id="loginBtn"
+            onclick="doLogin()">
+      Sign In →
+    </button>
+  </div>
+
+  <!-- Register form -->
+  <div class="form" id="registerForm">
+    <div class="field">
+      <label>Full Name</label>
+      <input type="text"
+             id="regName"
+             placeholder="Your full name">
+    </div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text"
+             id="regUser"
+             placeholder="Choose a username">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password"
+             id="regPass"
+             placeholder="Min 6 characters"
+             oninput="checkStrength(this.value)">
+      <div class="pw-strength">
+        <div class="pw-fill" id="pwFill"></div>
+      </div>
+    </div>
+    <button class="submit-btn"
+            id="regBtn"
+            onclick="doRegister()">
+      Create Account →
+    </button>
+  </div>
+
+  <!-- Features -->
+  <div class="features">
+    <div class="feat">
+      <div class="fi">👁️</div>
+      <p>Real-time<br>Focus Detection</p>
+    </div>
+    <div class="feat">
+      <div class="fi">🧠</div>
+      <p>AI-Powered<br>Analysis</p>
+    </div>
+    <div class="feat">
+      <div class="fi">📊</div>
+      <p>Smart<br>Analytics</p>
+    </div>
+    <div class="feat">
+      <div class="fi">🔔</div>
+      <p>Intelligent<br>Alerts</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Tab switching ────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab')
+    .forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.form')
+    .forEach(f => f.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tab+'Form')
+    .classList.add('active');
+  clearMsg();
+}
+
+// ── Messages ─────────────────────────────────────────────────────
+function showMsg(text, type='error') {
+  const box = document.getElementById('msgBox');
+  box.textContent  = text;
+  box.className    = 'msg ' + type;
+}
+function clearMsg() {
+  const box = document.getElementById('msgBox');
+  box.className = 'msg';
+}
+
+// ── Password strength ─────────────────────────────────────────────
+function checkStrength(pw) {
+  const fill = document.getElementById('pwFill');
+  let strength = 0;
+  if (pw.length >= 6)  strength += 33;
+  if (pw.length >= 10) strength += 34;
+  if (/[^a-zA-Z0-9]/.test(pw)) strength += 33;
+  fill.style.width = strength + '%';
+  fill.style.background =
+    strength < 40 ? '#f38ba8' :
+    strength < 70 ? '#fab387' : '#a6e3a1';
+}
+
+// ── Login ────────────────────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  if (!username || !password) {
+    showMsg('Please fill in all fields'); return;
+  }
+  const btn = document.getElementById('loginBtn');
+  btn.innerHTML = '<span class="spinner"></span>Signing in...';
+  btn.disabled  = true;
+  clearMsg();
+
+  try {
+    const res  = await fetch('/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    if (data.success) {
+      showMsg('Welcome back! Redirecting...','success');
+      setTimeout(() =>
+        window.location.href = data.redirect, 800);
+    } else {
+      showMsg(data.error || 'Login failed');
+      btn.innerHTML = 'Sign In →';
+      btn.disabled  = false;
+    }
+  } catch(e) {
+    showMsg('Connection error. Try again.');
+    btn.innerHTML = 'Sign In →';
+    btn.disabled  = false;
+  }
+}
+
+// ── Register ─────────────────────────────────────────────────────
+async function doRegister() {
+  const name     = document.getElementById('regName').value.trim();
+  const username = document.getElementById('regUser').value.trim();
+  const password = document.getElementById('regPass').value;
+
+  if (!name || !username || !password) {
+    showMsg('Please fill in all fields'); return;
+  }
+  if (password.length < 6) {
+    showMsg('Password must be at least 6 characters'); return;
+  }
+
+  const btn = document.getElementById('regBtn');
+  btn.innerHTML = '<span class="spinner"></span>Creating...';
+  btn.disabled  = true;
+  clearMsg();
+
+  try {
+    const res  = await fetch('/register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name, username, password})
+    });
+    const data = await res.json();
+    if (data.success) {
+      showMsg('Account created! Setting up...','success');
+      setTimeout(() =>
+        window.location.href = data.redirect, 800);
+    } else {
+      showMsg(data.error || 'Registration failed');
+      btn.innerHTML = 'Create Account →';
+      btn.disabled  = false;
+    }
+  } catch(e) {
+    showMsg('Connection error. Try again.');
+    btn.innerHTML = 'Create Account →';
+    btn.disabled  = false;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNITO — Admin</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f0f1a;
+    color: #cdd6f4;
+    min-height: 100vh;
+  }
+
+  /* ── Navbar ── */
+  nav {
+    position:sticky; top:0; z-index:100;
+    background: rgba(15,15,26,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(243,139,168,0.3);
+    padding: 0 32px; height: 56px;
+    display:flex; align-items:center;
+    justify-content:space-between;
+  }
+  .nav-logo {
+    font-size:18px; font-weight:900;
+    color:#f38ba8; letter-spacing:3px;
+    text-decoration:none;
+    display:flex; align-items:center; gap:8px;
+  }
+  .admin-badge {
+    padding:3px 10px; border-radius:99px;
+    background:rgba(243,139,168,0.15);
+    border:1px solid rgba(243,139,168,0.3);
+    color:#f38ba8; font-size:10px;
+    font-weight:700; letter-spacing:1px;
+  }
+  .nav-links { display:flex; gap:4px; }
+  .nav-link {
+    padding:6px 14px; border-radius:8px;
+    color:#6c6f85; text-decoration:none;
+    font-size:13px; transition:all 0.2s;
+  }
+  .nav-link:hover {
+    background:rgba(243,139,168,0.1);
+    color:#f38ba8;
+  }
+  .nav-right {
+    display:flex; align-items:center; gap:10px;
+  }
+  .pulse-dot {
+    width:8px; height:8px; border-radius:50%;
+    background:#a6e3a1;
+    animation: pulse 1.5s infinite;
+  }
+  .live-label {
+    font-size:11px; color:#a6e3a1;
+    font-weight:600; letter-spacing:1px;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(1.4); }
+  }
+
+  /* ── Page ── */
+  .page {
+    max-width:1400px; margin:0 auto;
+    padding:24px 24px 60px;
+  }
+  .page-header {
+    display:flex; align-items:center;
+    justify-content:space-between;
+    margin-bottom:24px;
+  }
+  .page-title {
+    font-size:24px; font-weight:800;
+    color:#cdd6f4;
+  }
+  .page-sub {
+    font-size:13px; color:#6c6f85;
+    margin-top:3px;
+  }
+  .refresh-btn {
+    padding:8px 18px;
+    background:rgba(243,139,168,0.1);
+    border:1px solid rgba(243,139,168,0.3);
+    border-radius:8px; color:#f38ba8;
+    font-size:12px; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; gap:6px;
+  }
+  .refresh-btn:hover {
+    background:rgba(243,139,168,0.2);
+  }
+
+  /* ── Summary strip ── */
+  .summary {
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px; margin-bottom:24px;
+  }
+  @media(max-width:700px) {
+    .summary { grid-template-columns:repeat(2,1fr); }
+  }
+  .sum-card {
+    background:rgba(30,30,46,0.8);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(69,71,90,0.4);
+    border-radius:14px; padding:18px;
+    text-align:center; transition:all 0.3s;
+  }
+  .sum-card:hover {
+    border-color:var(--c);
+    transform:translateY(-2px);
+  }
+  .sum-icon { font-size:24px; margin-bottom:6px; }
+  .sum-val {
+    font-size:28px; font-weight:900;
+    color:var(--c); margin-bottom:2px;
+  }
+  .sum-label {
+    font-size:10px; color:#6c6f85;
+    text-transform:uppercase; letter-spacing:1px;
+  }
+
+  /* ── Section ── */
+  .section { margin-bottom:28px; }
+  .section-title {
+    font-size:13px; font-weight:700;
+    color:#f38ba8; text-transform:uppercase;
+    letter-spacing:1px; margin-bottom:16px;
+    padding-bottom:8px;
+    border-bottom:1px solid rgba(243,139,168,0.2);
+    display:flex; align-items:center;
+    justify-content:space-between;
+  }
+
+  /* ── Live user grid ── */
+  .live-grid {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+  }
+  @media(max-width:1000px) {
+    .live-grid { grid-template-columns:repeat(2,1fr); }
+  }
+  @media(max-width:600px) {
+    .live-grid { grid-template-columns:1fr; }
+  }
+
+  .user-card {
+    background:rgba(30,30,46,0.8);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(69,71,90,0.4);
+    border-radius:16px; padding:20px;
+    transition:all 0.3s; position:relative;
+    overflow:hidden;
+  }
+  .user-card.active-session {
+    border-color:rgba(166,227,161,0.4);
+    box-shadow:0 0 24px rgba(166,227,161,0.08);
+  }
+  .user-card.inactive {
+    opacity:0.6;
+  }
+  .user-card::before {
+    content:'';
+    position:absolute; top:0; left:0; right:0;
+    height:3px;
+    background:var(--c,#45475a);
+    opacity:0.6;
+  }
+
+  /* ── Card header ── */
+  .uc-header {
+    display:flex; align-items:center;
+    gap:12px; margin-bottom:16px;
+  }
+  .uc-avatar {
+    width:44px; height:44px; border-radius:50%;
+    background:linear-gradient(
+      135deg,#89b4fa,#cba6f7);
+    display:flex; align-items:center;
+    justify-content:center;
+    font-size:16px; font-weight:800;
+    color:#1e1e2e; overflow:hidden;
+    flex-shrink:0;
+  }
+  .uc-avatar img {
+    width:100%; height:100%; object-fit:cover;
+  }
+  .uc-info { flex:1; min-width:0; }
+  .uc-name {
+    font-size:14px; font-weight:700;
+    color:#cdd6f4; margin-bottom:2px;
+    white-space:nowrap; overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .uc-username {
+    font-size:11px; color:#6c6f85;
+  }
+  .status-dot {
+    width:10px; height:10px; border-radius:50%;
+    flex-shrink:0;
+  }
+  .status-dot.online {
+    background:#a6e3a1;
+    box-shadow:0 0 8px #a6e3a1;
+    animation:pulse 1.5s infinite;
+  }
+  .status-dot.offline { background:#45475a; }
+
+  /* ── Live metrics ── */
+  .live-metrics {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:8px; margin-bottom:14px;
+  }
+  .lm-item {
+    background:rgba(15,15,26,0.6);
+    border-radius:8px; padding:8px;
+    text-align:center;
+    border:1px solid rgba(69,71,90,0.3);
+  }
+  .lm-val {
+    font-size:18px; font-weight:800;
+    display:block; margin-bottom:2px;
+  }
+  .lm-label {
+    font-size:9px; color:#6c6f85;
+    text-transform:uppercase; letter-spacing:1px;
+  }
+
+  /* ── Focus bar ── */
+  .focus-mini {
+    margin-bottom:12px;
+  }
+  .fm-header {
+    display:flex; justify-content:space-between;
+    margin-bottom:4px;
+  }
+  .fm-label { font-size:10px; color:#6c6f85; }
+  .fm-val   { font-size:10px; font-weight:700;
+               color:#cdd6f4; }
+  .fm-bg {
+    height:5px; background:rgba(49,50,68,0.8);
+    border-radius:99px; overflow:hidden;
+  }
+  .fm-fill {
+    height:100%; border-radius:99px;
+    transition:width 0.6s ease;
+  }
+
+  /* ── Alert badge ── */
+  .alert-badge {
+    padding:5px 10px; border-radius:6px;
+    font-size:10px; font-weight:600;
+    margin-bottom:10px; display:none;
+  }
+  .alert-badge.show { display:block; }
+  .ab-warning {
+    background:rgba(250,179,135,0.15);
+    border:1px solid rgba(250,179,135,0.3);
+    color:#fab387;
+  }
+  .ab-emergency {
+    background:rgba(243,139,168,0.2);
+    border:1px solid rgba(243,139,168,0.4);
+    color:#f38ba8;
+    animation:shake 0.5s ease infinite;
+  }
+  @keyframes shake {
+    0%,100% { transform:translateX(0); }
+    25%      { transform:translateX(3px); }
+    75%      { transform:translateX(-3px); }
+  }
+
+  /* ── Send alert btn ── */
+  .send-alert-btn {
+    width:100%; padding:8px;
+    background:rgba(137,180,250,0.1);
+    border:1px solid rgba(137,180,250,0.2);
+    border-radius:8px; color:#89b4fa;
+    font-size:11px; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center;
+    justify-content:center; gap:6px;
+  }
+  .send-alert-btn:hover {
+    background:rgba(137,180,250,0.2);
+  }
+
+  /* ── Offline card ── */
+  .offline-label {
+    text-align:center; padding:12px;
+    color:#45475a; font-size:12px;
+  }
+
+  /* ── Sessions table ── */
+  .table-wrap {
+    background:rgba(30,30,46,0.7);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(69,71,90,0.4);
+    border-radius:16px; overflow:hidden;
+  }
+  table { width:100%; border-collapse:collapse; }
+  thead th {
+    background:rgba(15,15,26,0.7);
+    padding:10px 16px; font-size:10px;
+    color:#6c6f85; text-align:left;
+    text-transform:uppercase; letter-spacing:1px;
+    font-weight:600;
+  }
+  tbody tr {
+    border-bottom:1px solid rgba(69,71,90,0.2);
+    transition:background 0.15s;
+  }
+  tbody tr:hover { background:rgba(49,50,68,0.3); }
+  tbody tr:last-child { border-bottom:none; }
+  tbody td {
+    padding:10px 16px; font-size:12px;
+    color:#9399b2;
+  }
+  .grade {
+    display:inline-flex; align-items:center;
+    justify-content:center;
+    width:26px; height:26px;
+    border-radius:7px; font-size:11px;
+    font-weight:800;
+  }
+  .g-A { background:rgba(166,227,161,0.2);
+          color:#a6e3a1; }
+  .g-B { background:rgba(137,180,250,0.2);
+          color:#89b4fa; }
+  .g-C { background:rgba(250,179,135,0.2);
+          color:#fab387; }
+  .g-D { background:rgba(243,139,168,0.2);
+          color:#f38ba8; }
+  .g-F { background:rgba(108,111,133,0.2);
+          color:#6c6f85; }
+
+  /* ── Alert modal ── */
+  .modal-bg {
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.7);
+    backdrop-filter:blur(8px);
+    z-index:999; display:none;
+    align-items:center; justify-content:center;
+  }
+  .modal-bg.open { display:flex; }
+  .modal {
+    background:rgba(30,30,46,0.98);
+    border:1px solid rgba(137,180,250,0.3);
+    border-radius:20px; padding:28px;
+    width:420px; max-width:90vw;
+    animation:slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .modal h3 {
+    font-size:16px; font-weight:700;
+    color:#cdd6f4; margin-bottom:6px;
+  }
+  .modal p {
+    font-size:12px; color:#6c6f85;
+    margin-bottom:16px;
+  }
+  .modal textarea {
+    width:100%; padding:12px;
+    background:rgba(49,50,68,0.6);
+    border:1px solid rgba(69,71,90,0.6);
+    border-radius:10px; color:#cdd6f4;
+    font-size:13px; resize:none;
+    height:90px; outline:none;
+    font-family:inherit; transition:all 0.2s;
+  }
+  .modal textarea:focus {
+    border-color:#89b4fa;
+    box-shadow:0 0 0 3px rgba(137,180,250,0.1);
+  }
+  .modal-btns {
+    display:flex; gap:10px; margin-top:14px;
+  }
+  .modal-send {
+    flex:1; padding:11px;
+    background:linear-gradient(
+      135deg,#89b4fa,#cba6f7);
+    border:none; border-radius:9px;
+    color:#1e1e2e; font-size:13px;
+    font-weight:700; cursor:pointer;
+    transition:all 0.2s;
+  }
+  .modal-send:hover { opacity:0.85; }
+  .modal-cancel {
+    padding:11px 20px;
+    background:rgba(49,50,68,0.6);
+    border:1px solid rgba(69,71,90,0.4);
+    border-radius:9px; color:#9399b2;
+    font-size:13px; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .modal-cancel:hover {
+    background:rgba(49,50,68,0.9);
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position:fixed; bottom:24px; right:24px;
+    background:rgba(166,227,161,0.15);
+    border:1px solid rgba(166,227,161,0.3);
+    color:#a6e3a1; padding:12px 20px;
+    border-radius:10px; font-size:13px;
+    font-weight:600; z-index:9999;
+    transform:translateY(80px); opacity:0;
+    transition:all 0.3s;
+  }
+  .toast.show {
+    transform:translateY(0); opacity:1;
+  }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Alert Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>📢 Send Alert to User</h3>
+    <p id="modalTarget">Sending to: —</p>
+    <textarea id="alertMsg"
+              placeholder="Type your alert message...
+e.g. Please take a break now!
+     Your focus is critically low."></textarea>
+    <div class="modal-btns">
+      <button class="modal-send"
+              onclick="sendAlert()">
+        Send Alert →
+      </button>
+      <button class="modal-cancel"
+              onclick="closeModal()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<nav>
+  <a class="nav-logo" href="/admin">
+    🛡️ COGNITO
+    <span class="admin-badge">ADMIN</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link" href="/dashboard">
+      Dashboard
+    </a>
+    <a class="nav-link" href="/leaderboard">
+      Leaderboard
+    </a>
+  </div>
+  <div class="nav-right">
+    <div class="pulse-dot"></div>
+    <div class="live-label">LIVE</div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">
+        🛡️ Admin Dashboard
+      </div>
+      <div class="page-sub">
+        Monitor all users in real-time
+      </div>
+    </div>
+    <button class="refresh-btn"
+            onclick="loadData()">
+      🔄 Refresh
+    </button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary">
+    <div class="sum-card"
+         style="--c:#89b4fa">
+      <div class="sum-icon">👥</div>
+      <div class="sum-val" id="sumTotal">
+        {{ all_users|length }}
+      </div>
+      <div class="sum-label">Total Users</div>
+    </div>
+    <div class="sum-card"
+         style="--c:#a6e3a1">
+      <div class="sum-icon">🟢</div>
+      <div class="sum-val" id="sumActive">
+        {{ active_sessions|length }}
+      </div>
+      <div class="sum-label">Active Now</div>
+    </div>
+    <div class="sum-card"
+         style="--c:#fab387">
+      <div class="sum-icon">📊</div>
+      <div class="sum-val" id="sumSessions">
+        {{ all_users|sum(
+           attribute='total_sessions') }}
+      </div>
+      <div class="sum-label">Total Sessions</div>
+    </div>
+    <div class="sum-card"
+         style="--c:#cba6f7">
+      <div class="sum-icon">🏆</div>
+      <div class="sum-val" id="sumPoints">
+        {{ all_users|sum(
+           attribute='total_points') }}
+      </div>
+      <div class="sum-label">Total Points</div>
+    </div>
+  </div>
+
+  <!-- Live Users -->
+  <div class="section">
+    <div class="section-title">
+      🟢 Live User Monitor
+      <span style="font-size:10px;
+                   color:#6c6f85;
+                   font-weight:400">
+        Auto-refreshes every 2s
+      </span>
+    </div>
+    <div class="live-grid" id="liveGrid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- Recent Sessions -->
+  <div class="section">
+    <div class="section-title">
+      📋 Recent Sessions (All Users)
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Duration</th>
+            <th>Score</th>
+            <th>Grade</th>
+            <th>Focus High</th>
+            <th>Distractions</th>
+          </tr>
+        </thead>
+        <tbody id="sessionsBody">
+          {% for s in sessions %}
+          <tr>
+            <td style="color:#cdd6f4;
+                       font-weight:600">
+              {{ s.date }}
+            </td>
+            <td>{{ s.time[:5] }}</td>
+            <td>{{ s.duration }}</td>
+            <td>
+              <span style="color:{{
+                '#a6e3a1' if s.avg_productivity>=70
+                else '#fab387' if s.avg_productivity>=50
+                else '#f38ba8'
+              }};font-weight:700">
+                {{ s.avg_productivity }}
+              </span>
+            </td>
+            <td>
+              <span class="grade g-{{ s.grade }}">
+                {{ s.grade }}
+              </span>
+            </td>
+            <td style="color:#a6e3a1">
+              {{ s.focus_high_pct }}%
+            </td>
+            <td style="color:#fab387">
+              {{ s.total_distractions }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let alertTargetUser = null;
+
+// ── Load live data ────────────────────────────────
+async function loadData() {
+  const res  = await fetch('/api/admin/users');
+  const users = await res.json();
+
+  const grid = document.getElementById('liveGrid');
+  document.getElementById('sumActive')
+    .textContent = users.filter(
+      u => u.is_active).length;
+
+  if (users.length === 0) {
+    grid.innerHTML =
+      '<div style="color:#6c6f85;font-size:13px;'+
+      'padding:24px">No users registered yet.</div>';
+    return;
+  }
+
+  grid.innerHTML = users.map(u =>
+    buildUserCard(u)).join('');
+}
+
+// ── Build user card ───────────────────────────────
+function buildUserCard(u) {
+  const fc = u.focus_label === 'High'
+    ? '#a6e3a1'
+    : u.focus_label === 'Medium'
+    ? '#fab387' : '#f38ba8';
+
+  const cardClass = u.is_active
+    ? 'user-card active-session'
+    : 'user-card inactive';
+
+  const statusClass = u.is_active
+    ? 'status-dot online'
+    : 'status-dot offline';
+
+  const avatarHtml = u.photo
+    ? `<img src="${u.photo}" alt="">`
+    : u.name[0].toUpperCase();
+
+  const alertHtml = u.alert
+    ? `<div class="alert-badge ab-warning show">
+         ⚠️ ${u.alert}
+       </div>`
+    : '';
+
+  const liveMetrics = u.is_active ? `
+    <div class="live-metrics">
+      <div class="lm-item">
+        <span class="lm-val"
+              style="color:${fc}">
+          ${u.focus_label}
+        </span>
+        <div class="lm-label">Focus</div>
+      </div>
+      <div class="lm-item">
+        <span class="lm-val"
+              style="color:#89b4fa">
+          ${u.attention_score}
+        </span>
+        <div class="lm-label">Attention</div>
+      </div>
+      <div class="lm-item">
+        <span class="lm-val"
+              style="color:#cba6f7">
+          ${u.prod_score}
+        </span>
+        <div class="lm-label">Score</div>
+      </div>
+      <div class="lm-item">
+        <span class="lm-val"
+              style="color:#fab387">
+          ${u.elapsed}
+        </span>
+        <div class="lm-label">Duration</div>
+      </div>
+    </div>
+    <div class="focus-mini">
+      <div class="fm-header">
+        <span class="fm-label">
+          Productivity
+        </span>
+        <span class="fm-val">
+          ${u.prod_score}/100
+        </span>
+      </div>
+      <div class="fm-bg">
+        <div class="fm-fill"
+             style="width:${u.prod_score}%;
+                    background:${
+                      u.prod_score>=70
+                      ? '#a6e3a1'
+                      : u.prod_score>=50
+                      ? '#fab387' : '#f38ba8'
+                    }">
+        </div>
+      </div>
+    </div>
+    ${alertHtml}
+    <button class="send-alert-btn"
+            onclick="openModal('${u.username}',
+                     '${u.name}')">
+      📢 Send Alert
+    </button>
+  ` : `
+    <div class="offline-label">
+      ⬤ Offline · ${u.total_sessions} sessions
+      · ${u.total_points} pts
+    </div>
+    <button class="send-alert-btn"
+            style="opacity:0.4"
+            disabled>
+      📢 User Offline
+    </button>
+  `;
+
+  const profileColor = {
+    student: '#89b4fa',
+    worker:  '#a6e3a1',
+    driver:  '#f38ba8',
+    gamer:   '#cba6f7',
+    medical: '#fab387',
+    athlete: '#94e2d5',
+  }[u.profile] || '#89b4fa';
+
+  return `
+    <div class="${cardClass}"
+         style="--c:${u.is_active
+           ? profileColor : '#45475a'}">
+      <div class="uc-header">
+        <div class="uc-avatar">${avatarHtml}</div>
+        <div class="uc-info">
+          <div class="uc-name">${u.name}</div>
+          <div class="uc-username">
+            @${u.username}
+            ${u.is_active
+              ? `· ${u.profile}` : ''}
+          </div>
+        </div>
+        <div class="${statusClass}"></div>
+      </div>
+      ${liveMetrics}
+    </div>
+  `;
+}
+
+// ── Alert modal ───────────────────────────────────
+function openModal(username, name) {
+  alertTargetUser = username;
+  document.getElementById('modalTarget')
+    .textContent = `Sending to: ${name}`;
+  document.getElementById('alertMsg').value = '';
+  document.getElementById('modalBg')
+    .classList.add('open');
+  setTimeout(() =>
+    document.getElementById('alertMsg')
+    .focus(), 300);
+}
+
+function closeModal() {
+  document.getElementById('modalBg')
+    .classList.remove('open');
+  alertTargetUser = null;
+}
+
+async function sendAlert() {
+  const msg = document.getElementById('alertMsg')
+                       .value.trim();
+  if (!msg || !alertTargetUser) return;
+
+  await fetch('/api/admin/send_alert', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      username: alertTargetUser,
+      message:  msg
+    })
+  });
+
+  closeModal();
+  showToast('✅ Alert sent to user!');
+}
+
+// ── Toast ─────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'),3000);
+}
+
+// ── Auto refresh ──────────────────────────────────
+loadData();
+setInterval(loadData, 2000);
+</script>
+</body>
+</html>

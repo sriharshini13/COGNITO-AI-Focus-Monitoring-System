@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNITO — {{ profile.name }}</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Segoe UI',sans-serif;
+  background:#0f0f1a; color:#cdd6f4;
+  min-height:100vh; overflow-x:hidden;
+}
+
+/* ── Navbar ── */
+nav {
+  position:sticky; top:0; z-index:200;
+  background:rgba(15,15,26,0.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(69,71,90,0.4);
+  padding:0 20px; height:54px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.nav-logo { font-size:17px; font-weight:900; color:#89b4fa; letter-spacing:3px; text-decoration:none; }
+.nav-badge {
+  display:flex; align-items:center; gap:7px; padding:4px 12px 4px 8px;
+  background:rgba(49,50,68,0.7); border:1px solid {{ profile.color }}44;
+  border-radius:99px; font-size:12px; font-weight:600; color:{{ profile.color }};
+}
+.nav-links { display:flex; gap:3px; }
+.nav-link { padding:5px 11px; border-radius:7px; color:#6c6f85; text-decoration:none; font-size:12px; transition:all .2s; }
+.nav-link:hover { background:rgba(137,180,250,.1); color:#89b4fa; }
+.nav-user {
+  display:flex; align-items:center; gap:7px; padding:4px 10px 4px 5px;
+  background:rgba(49,50,68,.5); border:1px solid rgba(69,71,90,.4);
+  border-radius:99px; text-decoration:none; font-size:12px; color:#cdd6f4; transition:all .2s;
+}
+.nav-user:hover { border-color:rgba(137,180,250,.3); }
+.nav-av {
+  width:26px; height:26px; border-radius:50%;
+  background:linear-gradient(135deg,#89b4fa,#cba6f7);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:#1e1e2e; overflow:hidden;
+}
+.nav-av img { width:100%; height:100%; object-fit:cover; }
+
+/* ── Layout ── */
+.layout {
+  display:grid; grid-template-columns:1fr 345px;
+  gap:14px; padding:14px;
+  max-width:1340px; margin:0 auto;
+  height:calc(100vh - 54px);
+}
+@media(max-width:960px) { .layout { grid-template-columns:1fr; height:auto; } }
+
+/* ── Left col ── */
+.left-col { display:flex; flex-direction:column; gap:12px; min-height:0; }
+
+/* ── Video ── */
+.video-wrap {
+  position:relative; background:#060610;
+  border-radius:16px; overflow:hidden;
+  border:1px solid rgba(69,71,90,.4);
+  flex:1; min-height:340px;
+}
+.video-wrap img { width:100%; height:100%; object-fit:cover; display:block; min-height:340px; }
+
+/* Goal bar overlay on video */
+.goal-bar-wrap {
+  position:absolute; bottom:56px; left:0; right:0;
+  padding:0 13px; z-index:6; display:none;
+}
+.goal-bar-bg {
+  height:4px; background:rgba(255,255,255,.1);
+  border-radius:99px; overflow:hidden;
+}
+.goal-bar-fill {
+  height:100%; border-radius:99px;
+  background:linear-gradient(90deg, {{ profile.color }}, #cba6f7);
+  transition:width .8s ease;
+  position:relative;
+}
+.goal-label {
+  font-size:10px; color:rgba(255,255,255,.5);
+  margin-bottom:4px; display:flex; justify-content:space-between;
+}
+.goal-label span { color:{{ profile.color }}; font-weight:700; }
+
+/* Motivational strip on video */
+.motiv-strip {
+  position:absolute; top:58px; left:0; right:0;
+  text-align:center; z-index:6;
+  pointer-events:none; display:none;
+}
+.motiv-text {
+  display:inline-block; padding:5px 16px;
+  background:rgba(9,9,18,.75); border-radius:99px;
+  font-size:12px; font-weight:600; color:#cdd6f4;
+  border:1px solid rgba(255,255,255,.08);
+  transition:all .5s ease;
+}
+
+.overlay-start {
+  position:absolute; inset:0;
+  background:rgba(9,9,18,.94);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:11px; z-index:10; border-radius:16px;
+}
+.ov-icon { font-size:58px; }
+.ov-title { font-size:21px; font-weight:800; color:#cdd6f4; }
+.ov-sub { font-size:13px; color:#6c6f85; text-align:center; max-width:290px; line-height:1.5; }
+
+/* Goal input on overlay */
+.ov-goal {
+  display:flex; align-items:center; gap:9px;
+  background:rgba(49,50,68,.6); border:1px solid rgba(69,71,90,.5);
+  border-radius:10px; padding:8px 14px;
+}
+.ov-goal label { font-size:11px; color:#9399b2; white-space:nowrap; }
+.ov-goal input {
+  width:54px; background:transparent; border:none; outline:none;
+  color:#cdd6f4; font-size:14px; font-weight:700; text-align:center;
+}
+.ov-goal input::-webkit-inner-spin-button { -webkit-appearance:none; }
+.ov-goal-unit { font-size:11px; color:#6c6f85; }
+
+.ov-btn {
+  margin-top:4px; padding:13px 34px;
+  background:{{ profile.color }}; color:#1e1e2e;
+  border:none; border-radius:11px; font-size:14px; font-weight:700;
+  cursor:pointer; transition:all .25s;
+  box-shadow:0 8px 24px {{ profile.color }}44;
+}
+.ov-btn:hover { transform:translateY(-2px); box-shadow:0 12px 32px {{ profile.color }}66; }
+
+.vtopbar {
+  position:absolute; top:0; left:0; right:0; padding:9px 13px;
+  background:linear-gradient(rgba(9,9,18,.88),transparent);
+  display:flex; align-items:center; justify-content:space-between; z-index:5;
+}
+.live-pill { display:flex; align-items:center; gap:5px; font-size:11px; color:#f38ba8; font-weight:600; }
+.dot-pulse { width:7px; height:7px; border-radius:50%; background:#f38ba8; animation:dotpulse 1.4s infinite; }
+@keyframes dotpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }
+.vtimer { font-size:21px; font-weight:800; color:#fff; font-family:monospace; text-shadow:0 2px 8px rgba(0,0,0,.8); }
+
+/* Streak badge on video */
+.streak-badge {
+  position:absolute; top:12px; left:50%; transform:translateX(-50%);
+  z-index:6; display:none;
+  background:rgba(9,9,18,.8); border:1px solid #fab38766;
+  border-radius:99px; padding:4px 12px;
+  font-size:11px; font-weight:700; color:#fab387;
+  white-space:nowrap;
+}
+
+.vbottombar {
+  position:absolute; bottom:0; left:0; right:0; padding:18px 13px 11px;
+  background:linear-gradient(transparent,rgba(9,9,18,.94));
+  display:flex; align-items:flex-end; justify-content:space-between; z-index:5;
+}
+.focus-big-label { font-size:10px; color:#6c6f85; text-transform:uppercase; letter-spacing:1px; }
+.focus-big-val { font-size:26px; font-weight:900; line-height:1.1; transition:color .3s; }
+.emotion-pill-badge {
+  padding:5px 12px; border-radius:99px; font-size:11px; font-weight:600;
+  background:rgba(49,50,68,.8); border:1px solid rgba(69,71,90,.6); color:#9399b2; transition:all .3s;
+}
+
+/* ── Controls ── */
+.controls { display:flex; gap:9px; }
+.cbtn { flex:1; padding:11px; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; transition:all .2s; }
+.cbtn-start { background:linear-gradient(135deg,#a6e3a1,#94e2d5); color:#1e1e2e; }
+.cbtn-stop  { background:linear-gradient(135deg,#f38ba8,#fab387); color:#1e1e2e; }
+.cbtn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,.3); }
+.cbtn:disabled { opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
+.cbtn-icon {
+  flex:0 0 42px; background:rgba(49,50,68,.7); border:1px solid rgba(69,71,90,.4);
+  color:#9399b2; font-size:15px; border-radius:10px; cursor:pointer; transition:all .2s;
+}
+.cbtn-icon:hover { background:rgba(137,180,250,.15); color:#89b4fa; }
+
+/* ── Right col ── */
+.right-col { display:flex; flex-direction:column; gap:11px; overflow-y:auto; padding-bottom:14px; }
+.right-col::-webkit-scrollbar { width:3px; }
+.right-col::-webkit-scrollbar-thumb { background:#45475a; border-radius:3px; }
+
+/* ── Metric card ── */
+.mc {
+  background:rgba(30,30,46,.8); backdrop-filter:blur(12px);
+  border:1px solid rgba(69,71,90,.4); border-radius:13px; padding:14px;
+}
+.mc-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
+.mc-title { font-size:10px; color:#6c6f85; text-transform:uppercase; letter-spacing:1px; font-weight:600; }
+.tip-btn { width:17px; height:17px; border-radius:50%; background:rgba(69,71,90,.8); color:#6c6f85; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; font-weight:700; }
+.tip-btn:hover .tip-text { display:block; }
+.tip-text { display:none; position:absolute; right:0; top:21px; background:rgba(25,25,40,.98); border:1px solid rgba(69,71,90,.8); border-radius:8px; padding:8px 11px; font-size:10px; color:#9399b2; width:190px; line-height:1.5; z-index:50; font-weight:400; box-shadow:0 8px 24px rgba(0,0,0,.5); }
+
+/* ── Gauge ── */
+.gauge-wrap { display:flex; flex-direction:column; align-items:center; }
+
+/* ── Score bars ── */
+.sbar { margin-bottom:9px; }
+.sbar-hdr { display:flex; justify-content:space-between; margin-bottom:4px; }
+.sbar-lbl { font-size:10px; color:#9399b2; }
+.sbar-v   { font-size:10px; font-weight:700; color:#cdd6f4; }
+.sbar-bg  { height:6px; background:rgba(49,50,68,.8); border-radius:99px; overflow:hidden; }
+.sbar-fill { height:100%; border-radius:99px; transition:width .6s ease; }
+
+/* ── Confidence bars ── */
+.conf-row { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+.conf-lbl { font-size:10px; color:#9399b2; width:55px; }
+.conf-bg  { flex:1; height:6px; background:rgba(49,50,68,.8); border-radius:99px; overflow:hidden; }
+.conf-fill { height:100%; border-radius:99px; transition:width .5s ease; }
+.conf-pct { font-size:10px; font-weight:700; color:#cdd6f4; width:30px; text-align:right; }
+
+/* ── Drowsiness meter ── */
+.drown-meter { display:flex; gap:5px; margin-top:4px; }
+.drown-seg { flex:1; height:8px; border-radius:3px; background:rgba(49,50,68,.8); transition:background .4s; }
+
+/* ── Focus dist ── */
+.fdrow { display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+.fdrow:last-child { margin-bottom:0; }
+.fd-icon { font-size:13px; flex-shrink:0; }
+.fd-lbl  { font-size:10px; color:#9399b2; width:50px; }
+.fd-bg   { flex:1; height:6px; background:rgba(49,50,68,.8); border-radius:99px; overflow:hidden; }
+.fd-fill { height:100%; border-radius:99px; transition:width .6s ease; }
+.fd-pct  { font-size:10px; font-weight:700; color:#cdd6f4; width:30px; text-align:right; }
+
+/* ── Stats grid ── */
+.sg { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.sb { background:rgba(15,15,26,.6); border-radius:9px; padding:9px; text-align:center; border:1px solid rgba(69,71,90,.3); }
+.sb .sv { font-size:20px; font-weight:800; display:block; }
+.sb .sl { font-size:9px; color:#6c6f85; margin-top:1px; }
+
+/* ── Streak card ── */
+.streak-card {
+  display:flex; align-items:center; gap:12px;
+  background:rgba(15,15,26,.6); border-radius:10px; padding:10px 13px;
+  border:1px solid rgba(250,179,135,.2);
+}
+.streak-fire { font-size:22px; }
+.streak-info { flex:1; }
+.streak-val { font-size:19px; font-weight:900; color:#fab387; line-height:1.1; }
+.streak-lbl { font-size:10px; color:#6c6f85; }
+.streak-max { font-size:10px; color:#6c6f85; text-align:right; }
+.streak-max span { color:#fab387; font-weight:700; }
+
+/* ── Goal card ── */
+.goal-card {
+  background:rgba(15,15,26,.6); border-radius:10px; padding:11px 13px;
+  border:1px solid rgba(69,71,90,.3);
+}
+.goal-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
+.goal-lbl { font-size:11px; color:#9399b2; }
+.goal-val { font-size:13px; font-weight:800; color:#cdd6f4; }
+.goal-reached-badge {
+  display:inline-block; padding:2px 9px;
+  background:rgba(166,227,161,.2); border:1px solid rgba(166,227,161,.4);
+  border-radius:99px; font-size:10px; font-weight:700; color:#a6e3a1;
+}
+.goal-prog-bg { height:7px; background:rgba(49,50,68,.8); border-radius:99px; overflow:hidden; }
+.goal-prog-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,{{ profile.color }},#cba6f7); transition:width .8s ease; }
+
+/* ── Chart card ── */
+.chart-wrap { position:relative; }
+.chart-label {
+  font-size:9px; color:#6c6f85;
+  position:absolute; left:0; top:0;
+  background:rgba(49,50,68,.6); padding:2px 6px; border-radius:4px;
+}
+
+/* ── Explain box ── */
+.explain {
+  background:rgba(30,30,46,.8); border:1px solid rgba(69,71,90,.4);
+  border-radius:13px; padding:14px;
+}
+.explain h3 { font-size:10px; color:#6c6f85; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+.ex-row { display:flex; gap:9px; margin-bottom:9px; padding:9px; border-radius:7px; background:rgba(15,15,26,.5); border:1px solid rgba(69,71,90,.2); }
+.ex-row:last-child { margin-bottom:0; }
+.ex-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+.ex-text h4 { font-size:11px; font-weight:700; color:#cdd6f4; margin-bottom:2px; }
+.ex-text p  { font-size:10px; color:#6c6f85; line-height:1.5; }
+
+/* ── Alert banner ── */
+.alert-banner {
+  position:fixed; top:66px; left:50%;
+  transform:translateX(-50%) translateY(-14px);
+  z-index:999; padding:12px 22px; border-radius:11px;
+  font-size:13px; font-weight:600; max-width:520px; width:90%;
+  text-align:center; opacity:0; pointer-events:none;
+  transition:all .35s ease; display:flex; align-items:center;
+  gap:9px; justify-content:center;
+}
+.alert-banner.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.alert-info      { background:rgba(137,180,250,.13); border:1px solid rgba(137,180,250,.3); color:#89b4fa; }
+.alert-warning   { background:rgba(250,179,135,.13); border:1px solid rgba(250,179,135,.3); color:#fab387; }
+.alert-emergency { background:rgba(243,139,168,.2);  border:1px solid rgba(243,139,168,.5); color:#f38ba8; animation:shake .4s ease; }
+.alert-break     { background:rgba(166,227,161,.13); border:1px solid rgba(166,227,161,.3); color:#a6e3a1; }
+@keyframes shake {
+  0%,100%{transform:translateX(-50%) translateY(0)}
+  25%{transform:translateX(calc(-50% + 6px)) translateY(0)}
+  75%{transform:translateX(calc(-50% - 6px)) translateY(0)}
+}
+
+/* ── Break popup ── */
+.break-popup {
+  position:fixed; bottom:24px; right:24px; z-index:998;
+  background:rgba(25,25,40,.97); border:1px solid rgba(166,227,161,.35);
+  border-radius:14px; padding:18px 20px; width:300px;
+  box-shadow:0 16px 48px rgba(0,0,0,.5);
+  transform:translateY(20px); opacity:0; pointer-events:none; transition:all .35s ease;
+}
+.break-popup.show { transform:translateY(0); opacity:1; pointer-events:all; }
+.bp-title { font-size:13px; font-weight:700; color:#a6e3a1; margin-bottom:5px; display:flex; align-items:center; gap:7px; }
+.bp-msg   { font-size:12px; color:#9399b2; line-height:1.5; margin-bottom:10px; }
+.bp-timer { font-size:18px; font-weight:900; color:#a6e3a1; text-align:center; margin-bottom:10px; font-family:monospace; }
+.bp-close { padding:7px 16px; background:rgba(166,227,161,.15); border:1px solid rgba(166,227,161,.3); border-radius:7px; color:#a6e3a1; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; }
+.bp-close:hover { background:rgba(166,227,161,.25); }
+
+/* ── Admin alert ── */
+.admin-alert-popup {
+  position:fixed; top:70px; right:20px; z-index:997;
+  background:rgba(25,25,40,.97); border:1px solid rgba(243,139,168,.4);
+  border-radius:12px; padding:14px 18px; width:280px;
+  transform:translateX(20px); opacity:0; pointer-events:none; transition:all .35s ease;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+}
+.admin-alert-popup.show { transform:translateX(0); opacity:1; pointer-events:all; }
+.aa-title { font-size:11px; color:#f38ba8; font-weight:700; margin-bottom:5px; text-transform:uppercase; letter-spacing:1px; }
+.aa-msg   { font-size:12px; color:#cdd6f4; line-height:1.4; }
+
+/* ── Session end summary ── */
+.summary-overlay {
+  position:fixed; inset:0;
+  background:rgba(9,9,18,.92); backdrop-filter:blur(12px);
+  z-index:1100; display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:all .4s ease;
+}
+.summary-overlay.show { opacity:1; pointer-events:all; }
+.summary-card {
+  background:rgba(30,30,46,.99); border:1px solid rgba(137,180,250,.2);
+  border-radius:20px; padding:32px 32px 28px; width:440px; max-width:92vw;
+  box-shadow:0 40px 100px rgba(0,0,0,.7);
+  transform:scale(.92); transition:transform .4s ease;
+}
+.summary-overlay.show .summary-card { transform:scale(1); }
+.sum-header { text-align:center; margin-bottom:24px; }
+.sum-icon   { font-size:52px; margin-bottom:8px; }
+.sum-title  { font-size:20px; font-weight:900; color:#cdd6f4; margin-bottom:4px; }
+.sum-sub    { font-size:12px; color:#6c6f85; }
+.sum-grade-wrap {
+  display:flex; justify-content:center; margin-bottom:20px;
+}
+.sum-grade {
+  width:80px; height:80px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:36px; font-weight:900; border:3px solid;
+}
+.sum-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; }
+.sum-stat { background:rgba(15,15,26,.7); border-radius:10px; padding:12px; text-align:center; border:1px solid rgba(69,71,90,.3); }
+.sum-stat-val { font-size:22px; font-weight:900; display:block; margin-bottom:2px; }
+.sum-stat-lbl { font-size:9px; color:#6c6f85; }
+.sum-pts-row {
+  background:rgba(166,227,161,.08); border:1px solid rgba(166,227,161,.2);
+  border-radius:10px; padding:12px; text-align:center; margin-bottom:18px;
+}
+.sum-pts-big { font-size:28px; font-weight:900; color:#a6e3a1; }
+.sum-pts-lbl { font-size:11px; color:#6c6f85; margin-top:2px; }
+.sum-btn {
+  width:100%; padding:13px; border:none; border-radius:10px;
+  background:linear-gradient(135deg,#89b4fa,#cba6f7);
+  color:#1e1e2e; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s;
+}
+.sum-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(137,180,250,.3); }
+
+/* ── Quiz modal ── */
+.quiz-overlay {
+  position:fixed; inset:0; background:rgba(9,9,18,.85); backdrop-filter:blur(8px);
+  z-index:1000; display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:all .3s ease;
+}
+.quiz-overlay.show { opacity:1; pointer-events:all; }
+.quiz-card {
+  background:rgba(30,30,46,.98); border:1px solid rgba(137,180,250,.25);
+  border-radius:18px; padding:28px 28px 24px; width:460px; max-width:92vw;
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+  transform:scale(.94); transition:transform .3s ease;
+}
+.quiz-overlay.show .quiz-card { transform:scale(1); }
+.quiz-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.quiz-badge {
+  display:inline-flex; align-items:center; gap:6px; padding:4px 12px;
+  background:rgba(137,180,250,.12); border:1px solid rgba(137,180,250,.25);
+  border-radius:99px; font-size:10px; font-weight:700; color:#89b4fa;
+  letter-spacing:1px; text-transform:uppercase;
+}
+/* Quiz countdown timer */
+.quiz-timer-wrap { display:flex; align-items:center; gap:6px; }
+.quiz-timer-ring { position:relative; width:34px; height:34px; }
+.quiz-timer-ring svg { transform:rotate(-90deg); }
+.quiz-timer-ring circle { fill:none; stroke-width:3; }
+.qtimer-bg   { stroke:rgba(69,71,90,.5); }
+.qtimer-fill { stroke:#89b4fa; stroke-linecap:round; transition:stroke-dashoffset .9s linear, stroke .3s; }
+.quiz-timer-num {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800; color:#cdd6f4;
+}
+.quiz-q { font-size:15px; font-weight:700; color:#cdd6f4; line-height:1.5; margin-bottom:18px; }
+.quiz-opts { display:flex; flex-direction:column; gap:9px; margin-bottom:18px; }
+.qopt {
+  padding:11px 14px; background:rgba(49,50,68,.6); border:1px solid rgba(69,71,90,.6);
+  border-radius:9px; font-size:13px; color:#cdd6f4; cursor:pointer; transition:all .2s; text-align:left;
+}
+.qopt:hover:not(:disabled) { background:rgba(137,180,250,.12); border-color:rgba(137,180,250,.35); color:#89b4fa; }
+.qopt.correct { background:rgba(166,227,161,.15); border-color:rgba(166,227,161,.5); color:#a6e3a1; }
+.qopt.wrong   { background:rgba(243,139,168,.12); border-color:rgba(243,139,168,.4); color:#f38ba8; }
+.quiz-explain { font-size:11px; color:#9399b2; line-height:1.5; padding:10px 12px; background:rgba(15,15,26,.6); border-radius:8px; margin-bottom:14px; display:none; }
+.quiz-explain.show { display:block; }
+.quiz-footer { display:flex; align-items:center; justify-content:space-between; }
+.quiz-pts { font-size:12px; color:#6c6f85; }
+.quiz-pts span { font-weight:700; color:#a6e3a1; }
+.quiz-close { padding:9px 20px; background:rgba(137,180,250,.15); border:1px solid rgba(137,180,250,.3); border-radius:8px; color:#89b4fa; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; }
+.quiz-close:hover { background:rgba(137,180,250,.25); }
+
+/* ── Goal celebrate ── */
+@keyframes goalPop {
+  0%   { transform:scale(0.5) translateY(20px); opacity:0; }
+  60%  { transform:scale(1.15) translateY(-8px); opacity:1; }
+  100% { transform:scale(1) translateY(0); opacity:1; }
+}
+.goal-celebrate {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  z-index:900; text-align:center; pointer-events:none;
+  display:none;
+}
+.goal-celebrate.show { display:block; animation:goalPop .6s ease forwards; }
+.gc-inner {
+  background:rgba(25,25,40,.97); border:1px solid rgba(166,227,161,.5);
+  border-radius:18px; padding:24px 32px;
+  box-shadow:0 24px 64px rgba(0,0,0,.7);
+}
+.gc-emoji { font-size:48px; display:block; margin-bottom:8px; }
+.gc-title { font-size:18px; font-weight:900; color:#a6e3a1; margin-bottom:4px; }
+.gc-sub   { font-size:12px; color:#6c6f85; }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+  <a class="nav-logo" href="/">COGNITO</a>
+  <div class="nav-badge">{{ profile.icon }} {{ profile.name }}</div>
+  <div class="nav-links">
+    <a class="nav-link" href="/">← Profiles</a>
+    <a class="nav-link" href="/dashboard">Dashboard</a>
+    <a class="nav-link" href="/report">Reports</a>
+    <a class="nav-link" href="/leaderboard">🏆</a>
+  </div>
+  <a class="nav-user" href="/profile">
+    <div class="nav-av">
+      {% if user and user.photo %}<img src="{{ user.photo }}" alt="">
+      {% else %}{{ user.name[0].upper() if user else 'U' }}{% endif %}
+    </div>
+    {{ user.name.split()[0] if user else 'User' }}
+  </a>
+</nav>
+
+<!-- Alert Banner -->
+<div class="alert-banner" id="alertBanner">
+  <span id="alertIcon">⚠️</span>
+  <span id="alertText"></span>
+</div>
+
+<!-- Break Popup -->
+<div class="break-popup" id="breakPopup">
+  <div class="bp-title">☕ <span id="bpTitle">Break Time!</span></div>
+  <div class="bp-msg" id="bpMsg"></div>
+  <div class="bp-timer" id="bpTimer" style="display:none">05:00</div>
+  <button class="bp-close" onclick="closeBreak()">Got it, thanks!</button>
+</div>
+
+<!-- Admin Alert Popup -->
+<div class="admin-alert-popup" id="adminAlertPopup">
+  <div class="aa-title">🔔 Admin Message</div>
+  <div class="aa-msg" id="adminAlertMsg"></div>
+</div>
+
+<!-- Goal Celebrate -->
+<div class="goal-celebrate" id="goalCelebrate">
+  <div class="gc-inner">
+    <span class="gc-emoji">🎯</span>
+    <div class="gc-title">Goal Reached!</div>
+    <div class="gc-sub" id="gcSub">You hit your target score!</div>
+  </div>
+</div>
+
+<!-- Quiz Modal -->
+<div class="quiz-overlay" id="quizOverlay">
+  <div class="quiz-card">
+    <div class="quiz-top">
+      <div class="quiz-badge">🧠 Focus Quiz</div>
+      <div class="quiz-timer-wrap">
+        <div class="quiz-timer-ring">
+          <svg width="34" height="34" viewBox="0 0 34 34">
+            <circle class="qtimer-bg" cx="17" cy="17" r="14" />
+            <circle class="qtimer-fill" id="qTimerCircle" cx="17" cy="17" r="14"
+              stroke-dasharray="87.96" stroke-dashoffset="0"/>
+          </svg>
+          <div class="quiz-timer-num" id="qTimerNum">15</div>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-q" id="quizQ">Loading...</div>
+    <div class="quiz-opts" id="quizOpts"></div>
+    <div class="quiz-explain" id="quizExplain"></div>
+    <div class="quiz-footer">
+      <div class="quiz-pts">Correct = <span id="quizPtsLabel">+10 pts</span></div>
+      <button class="quiz-close" id="quizCloseBtn" onclick="closeQuiz()" style="display:none">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Session End Summary -->
+<div class="summary-overlay" id="summaryOverlay">
+  <div class="summary-card">
+    <div class="sum-header">
+      <div class="sum-icon" id="sumIcon">🎓</div>
+      <div class="sum-title">Session Complete!</div>
+      <div class="sum-sub" id="sumSub">Great work today</div>
+    </div>
+    <div class="sum-grade-wrap">
+      <div class="sum-grade" id="sumGrade" style="color:#a6e3a1;border-color:#a6e3a1;">A</div>
+    </div>
+    <div class="sum-grid">
+      <div class="sum-stat">
+        <span class="sum-stat-val" id="sumDur" style="color:#89b4fa">00:00</span>
+        <div class="sum-stat-lbl">Duration</div>
+      </div>
+      <div class="sum-stat">
+        <span class="sum-stat-val" id="sumScore" style="color:#cba6f7">0</span>
+        <div class="sum-stat-lbl">Avg Score</div>
+      </div>
+      <div class="sum-stat">
+        <span class="sum-stat-val" id="sumStreak" style="color:#fab387">0</span>
+        <div class="sum-stat-lbl">Best Streak</div>
+      </div>
+      <div class="sum-stat">
+        <span class="sum-stat-val" id="sumDist" style="color:#f38ba8">0</span>
+        <div class="sum-stat-lbl">Distractions</div>
+      </div>
+      <div class="sum-stat">
+        <span class="sum-stat-val" id="sumYawn" style="color:#fab387">0</span>
+        <div class="sum-stat-lbl">Yawns</div>
+      </div>
+      <div class="sum-stat">
+        <span class="sum-stat-val" id="sumHighPct" style="color:#a6e3a1">0%</span>
+        <div class="sum-stat-lbl">High Focus</div>
+      </div>
+    </div>
+    <div class="sum-pts-row">
+      <div class="sum-pts-big" id="sumPts">+0</div>
+      <div class="sum-pts-lbl">Points Earned This Session</div>
+    </div>
+    <button class="sum-btn" onclick="goToDashboard()">📊 View Full Report →</button>
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- LEFT COLUMN -->
+  <div class="left-col">
+
+    <!-- Video -->
+    <div class="video-wrap" id="videoWrap">
+
+      <!-- Start overlay -->
+      <div class="overlay-start" id="overlayStart">
+        <div class="ov-icon">{{ profile.icon }}</div>
+        <div class="ov-title">{{ profile.name }} Mode</div>
+        <div class="ov-sub">{{ profile.description }}<br><br>Ensure your face is well lit and clearly visible.</div>
+        <div class="ov-goal">
+          <label>🎯 Target Score</label>
+          <input type="number" id="goalInput" min="30" max="100" value="75">
+          <span class="ov-goal-unit">/ 100</span>
+        </div>
+        <button class="ov-btn" onclick="startSession()">▶ Start Monitoring</button>
+      </div>
+
+      <!-- Live top bar -->
+      <div class="vtopbar" id="vtopbar" style="display:none">
+        <div class="live-pill"><div class="dot-pulse"></div>LIVE</div>
+        <div class="vtimer" id="vtimer">00:00</div>
+      </div>
+
+      <!-- Streak badge -->
+      <div class="streak-badge" id="streakBadge">🔥 0 streak</div>
+
+      <!-- Motivational strip -->
+      <div class="motiv-strip" id="motivStrip">
+        <span class="motiv-text" id="motivText">🎯 Session started!</span>
+      </div>
+
+      <!-- Goal bar -->
+      <div class="goal-bar-wrap" id="goalBarWrap">
+        <div class="goal-label">
+          <span>Goal Progress</span>
+          <span id="goalBarLabel">0 / 75</span>
+        </div>
+        <div class="goal-bar-bg">
+          <div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Video feed -->
+      <img id="videoFeed" src="" alt="">
+
+      <!-- Bottom bar -->
+      <div class="vbottombar" id="vbottombar" style="display:none">
+        <div>
+          <div class="focus-big-label">Focus Level</div>
+          <div class="focus-big-val" id="focusBigVal">—</div>
+        </div>
+        <div class="emotion-pill-badge" id="emotionPill">Detecting...</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="cbtn cbtn-start" id="btnStart" onclick="startSession()">▶ Start Session</button>
+      <button class="cbtn cbtn-stop"  id="btnStop"  onclick="stopSession()" disabled>■ Stop & Save</button>
+      <button class="cbtn cbtn-icon"  onclick="location.href='/dashboard'" title="Dashboard">📊</button>
+      <button class="cbtn cbtn-icon"  onclick="location.href='/leaderboard'" title="Leaderboard">🏆</button>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- Attention Gauge -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">Attention Score</div>
+        <div class="tip-btn">?<div class="tip-text">0-100 score based on eye openness, gaze direction, head pose and yawn detection. 70+ = Great focus!</div></div>
+      </div>
+      <div class="gauge-wrap">
+        <svg width="158" height="88" viewBox="0 0 158 88" style="overflow:visible">
+          <path d="M18 80 A61 61 0 0 1 140 80" fill="none" stroke="#1a1a2e" stroke-width="13" stroke-linecap="round"/>
+          <path id="gaugeFill" d="M18 80 A61 61 0 0 1 140 80" fill="none" stroke="#89b4fa" stroke-width="13"
+            stroke-linecap="round" stroke-dasharray="191.6" stroke-dashoffset="191.6"
+            style="transition:stroke-dashoffset .6s ease,stroke .3s"/>
+          <text id="gaugeVal" x="79" y="72" text-anchor="middle" fill="#cdd6f4"
+            font-family="Segoe UI" font-weight="900" font-size="28">0</text>
+        </svg>
+        <div style="font-size:10px;color:#6c6f85;margin-top:-4px" id="gaugeSub">Waiting...</div>
+      </div>
+    </div>
+
+    <!-- ML Confidence -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">ML Confidence</div>
+        <div class="tip-btn">?<div class="tip-text">Probability the AI assigns to each focus level. Higher = more certain prediction.</div></div>
+      </div>
+      <div class="conf-row">
+        <div class="conf-lbl">High</div>
+        <div class="conf-bg"><div class="conf-fill" id="confHigh" style="width:0%;background:#a6e3a1"></div></div>
+        <div class="conf-pct" id="confHighPct">0%</div>
+      </div>
+      <div class="conf-row">
+        <div class="conf-lbl">Medium</div>
+        <div class="conf-bg"><div class="conf-fill" id="confMed" style="width:0%;background:#fab387"></div></div>
+        <div class="conf-pct" id="confMedPct">0%</div>
+      </div>
+      <div class="conf-row" style="margin-bottom:0">
+        <div class="conf-lbl">Low</div>
+        <div class="conf-bg"><div class="conf-fill" id="confLow" style="width:0%;background:#f38ba8"></div></div>
+        <div class="conf-pct" id="confLowPct">0%</div>
+      </div>
+    </div>
+
+    <!-- Drowsiness -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">Drowsiness Level</div>
+        <div class="tip-btn">?<div class="tip-text">Measured from Eye Aspect Ratio (EAR). Awake → Mild → Moderate → Severe. Acts fast for drivers.</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:18px;font-weight:800" id="drownLabel">😊 Awake</span>
+        <span style="font-size:10px;color:#6c6f85" id="earVal">EAR: —</span>
+      </div>
+      <div class="drown-meter">
+        <div class="drown-seg" id="ds1"></div>
+        <div class="drown-seg" id="ds2"></div>
+        <div class="drown-seg" id="ds3"></div>
+        <div class="drown-seg" id="ds4"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px">
+        <span style="font-size:9px;color:#6c6f85">Awake</span>
+        <span style="font-size:9px;color:#6c6f85">Severe</span>
+      </div>
+    </div>
+
+    <!-- Productivity + Goal -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">Productivity Score</div>
+        <div class="tip-btn">?<div class="tip-text">Weighted: Focus 40%, Emotion 25%, Attention 25%, Posture 10%. Grade A=85+, B=70+, C=55+, D=40+.</div></div>
+      </div>
+      <div class="sbar">
+        <div class="sbar-hdr">
+          <span class="sbar-lbl">Score</span>
+          <span class="sbar-v" id="prodVal">0/100</span>
+        </div>
+        <div class="sbar-bg">
+          <div class="sbar-fill" id="prodBar" style="width:0%;background:linear-gradient(90deg,#cba6f7,#89b4fa)"></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:6px;margin-bottom:10px">
+        <span id="prodGrade" style="font-size:22px;font-weight:900;color:#6c6f85">—</span>
+        <span style="font-size:10px;color:#6c6f85;margin-left:5px">Grade</span>
+      </div>
+      <!-- Goal progress -->
+      <div class="goal-card">
+        <div class="goal-row">
+          <span class="goal-lbl">🎯 Session Goal</span>
+          <span class="goal-val"><span id="goalCurrent">0</span> / <span id="goalTarget">75</span></span>
+        </div>
+        <div class="goal-prog-bg">
+          <div class="goal-prog-fill" id="goalProgFill" style="width:0%"></div>
+        </div>
+        <div style="margin-top:6px;text-align:right">
+          <span id="goalReachedBadge" class="goal-reached-badge" style="display:none">✅ Goal Reached!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Focus Streak -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">Focus Streak</div>
+        <div class="tip-btn">?<div class="tip-text">Consecutive High-focus frames detected. Resets when focus drops. Max streak saved at end of session.</div></div>
+      </div>
+      <div class="streak-card">
+        <div class="streak-fire">🔥</div>
+        <div class="streak-info">
+          <div class="streak-val" id="streakVal">0</div>
+          <div class="streak-lbl">frames in a row</div>
+        </div>
+        <div class="streak-max">Best<br><span id="streakMax">0</span></div>
+      </div>
+    </div>
+
+    <!-- Focus Distribution -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">Focus Distribution</div>
+        <div class="tip-btn">?<div class="tip-text">% of session at each focus level. Aim for High Focus above 70% for best grade.</div></div>
+      </div>
+      <div class="fdrow">
+        <div class="fd-icon">🟢</div>
+        <div class="fd-lbl">High</div>
+        <div class="fd-bg"><div class="fd-fill" id="fdHigh" style="width:0%;background:#a6e3a1"></div></div>
+        <div class="fd-pct" id="fdHPct">0%</div>
+      </div>
+      <div class="fdrow">
+        <div class="fd-icon">🟡</div>
+        <div class="fd-lbl">Medium</div>
+        <div class="fd-bg"><div class="fd-fill" id="fdMed" style="width:0%;background:#fab387"></div></div>
+        <div class="fd-pct" id="fdMPct">0%</div>
+      </div>
+      <div class="fdrow">
+        <div class="fd-icon">🔴</div>
+        <div class="fd-lbl">Low</div>
+        <div class="fd-bg"><div class="fd-fill" id="fdLow" style="width:0%;background:#f38ba8"></div></div>
+        <div class="fd-pct" id="fdLPct">0%</div>
+      </div>
+    </div>
+
+    <!-- Session Stats -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">Session Stats</div>
+        <div class="tip-btn">?<div class="tip-text">Live stats. Distractions = focus drops. Yawns = fatigue events. Engaged = % time engaged.</div></div>
+      </div>
+      <div class="sg">
+        <div class="sb"><span class="sv" id="stDist" style="color:#f38ba8">0</span><div class="sl">Distractions</div></div>
+        <div class="sb"><span class="sv" id="stYawn" style="color:#fab387">0</span><div class="sl">Yawns</div></div>
+        <div class="sb"><span class="sv" id="stEng"  style="color:#a6e3a1">0%</span><div class="sl">Engaged</div></div>
+        <div class="sb"><span class="sv" id="stTime" style="color:#89b4fa">00:00</span><div class="sl">Duration</div></div>
+      </div>
+    </div>
+
+    <!-- Live Score Chart -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">Productivity Trend</div>
+        <div class="tip-btn">?<div class="tip-text">Real-time productivity over last 60 data points. Smooth upward line = great focus!</div></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="scoreChart" height="65"></canvas>
+      </div>
+    </div>
+
+    <!-- EAR Graph -->
+    <div class="mc">
+      <div class="mc-hdr">
+        <div class="mc-title">EAR (Eye Openness)</div>
+        <div class="tip-btn">?<div class="tip-text">Eye Aspect Ratio live trend. Below 0.20 = drowsy. Below 0.15 = severe. Should stay above 0.25 when alert.</div></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="earChart" height="55"></canvas>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px">
+        <span style="font-size:9px;color:#a6e3a1">▔ Alert (&gt;0.25)</span>
+        <span style="font-size:9px;color:#fab387">▔ Drowsy (&lt;0.20)</span>
+        <span style="font-size:9px;color:#f38ba8">▔ Severe (&lt;0.15)</span>
+      </div>
+    </div>
+
+    <!-- Explain -->
+    <div class="explain">
+      <h3>📖 What Each Level Means</h3>
+      <div class="ex-row">
+        <div class="ex-dot" style="background:#a6e3a1"></div>
+        <div class="ex-text">
+          <h4>🟢 High Focus</h4>
+          <p>Eyes open, looking at screen, head straight. Fully engaged and in the zone.</p>
+        </div>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot" style="background:#fab387"></div>
+        <div class="ex-text">
+          <h4>🟡 Medium Focus</h4>
+          <p>Slight distraction. Eyes wandering or head slightly turned. Refocus soon.</p>
+        </div>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot" style="background:#f38ba8"></div>
+        <div class="ex-text">
+          <h4>🔴 Low Focus</h4>
+          <p>Significant distraction or drowsiness. Take a break or refocus now.</p>
+        </div>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot" style="background:#89b4fa"></div>
+        <div class="ex-text">
+          <h4>📊 Attention Score</h4>
+          <p>70+ = Focused. 40–70 = Moderate. Below 40 = Needs attention.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right-col -->
+</div><!-- /layout -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const PROFILE_ID    = "{{ profile_id }}";
+const PROFILE_COLOR = "{{ profile.color }}";
+const QUIZ_BANK     = {{ quiz_bank | safe }};
+
+let sessionActive  = false;
+let pollInterval   = null;
+let lastAlert      = null;
+let alertTimeout   = null;
+let lastBreakMsg   = null;
+let quizAnswered   = false;
+let quizOpen       = false;
+let currentQuiz    = null;
+let quizTimerInt   = null;
+let quizSecsLeft   = 15;
+let breakTimerInt  = null;
+let goalReached    = false;
+let lastMotivMsg   = '';
+let sessionSummary = {};
+
+/* ══════════════════════════════════════════════
+   CHARTS
+══════════════════════════════════════════════ */
+const scoreChart = new Chart(
+  document.getElementById('scoreChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      data: [],
+      borderColor: PROFILE_COLOR,
+      backgroundColor: PROFILE_COLOR + '15',
+      borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0,
+    }]
+  },
+  options: {
+    responsive: true, animation: { duration: 150 },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { display: false },
+      y: { min: 0, max: 100,
+           ticks: { color:'#6c6f85', font:{size:8}, stepSize:25 },
+           grid: { color:'rgba(69,71,90,.25)' } }
+    }
+  }
+});
+
+const earChart = new Chart(
+  document.getElementById('earChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      data: [],
+      borderColor: '#94e2d5',
+      backgroundColor: '#94e2d510',
+      borderWidth: 1.5, fill: true, tension: 0.4, pointRadius: 0,
+    }]
+  },
+  options: {
+    responsive: true, animation: { duration: 150 },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { display: false },
+      y: { min: 0.0, max: 0.45,
+           ticks: { color:'#6c6f85', font:{size:8}, stepSize:0.1 },
+           grid: { color:'rgba(69,71,90,.25)' } }
+    }
+  }
+});
+
+/* ══════════════════════════════════════════════
+   MULTI-TONE BEEP SYSTEM (FIXED)
+══════════════════════════════════════════════ */
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function beepWarning() {
+  // Two descending tones — "attention needed"
+  try {
+    const ctx = getAudio();
+    [880, 660].forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.28;
+      gain.gain.setValueAtTime(0.45, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      osc.start(t); osc.stop(t + 0.25);
+    });
+  } catch(e) {}
+}
+
+function beepEmergency() {
+  // Three rapid sharp blasts — "danger"
+  try {
+    const ctx = getAudio();
+    [1100, 1100, 1100].forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sawtooth';
+      const t = ctx.currentTime + i * 0.2;
+      gain.gain.setValueAtTime(0.6, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      osc.start(t); osc.stop(t + 0.15);
+    });
+    // Screen shake
+    document.body.style.animation = 'none';
+    document.body.style.transform = 'translateX(4px)';
+    setTimeout(() => { document.body.style.transform = 'translateX(-4px)'; }, 80);
+    setTimeout(() => { document.body.style.transform = 'translateX(3px)'; }, 160);
+    setTimeout(() => { document.body.style.transform = ''; }, 240);
+  } catch(e) {}
+}
+
+function beepInfo() {
+  // Single gentle chime — "FYI"
+  try {
+    const ctx = getAudio();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 660;
+    osc.type = 'triangle';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
+  } catch(e) {}
+}
+
+function beepBreak() {
+  // Soft ascending chime — "time to rest"
+  try {
+    const ctx = getAudio();
+    [440, 550, 660].forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.18;
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.start(t); osc.stop(t + 0.3);
+    });
+  } catch(e) {}
+}
+
+function playBeep(type) {
+  switch(type) {
+    case 'emergency': beepEmergency(); break;
+    case 'warning':   beepWarning();   break;
+    case 'break':     beepBreak();     break;
+    default:          beepInfo();
+  }
+}
+
+/* ══════════════════════════════════════════════
+   START SESSION
+══════════════════════════════════════════════ */
+async function startSession() {
+  const goal = parseInt(document.getElementById('goalInput').value) || 75;
+
+  const res = await fetch('/api/start_session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ profile: PROFILE_ID, goal })
+  });
+  if (!res.ok) return;
+
+  sessionActive = true;
+  goalReached   = false;
+  lastBreakMsg  = null;
+  lastAlert     = null;
+  quizAnswered  = false;
+  quizOpen      = false;
+
+  document.getElementById('overlayStart').style.display = 'none';
+  document.getElementById('videoFeed').src = '/video_feed';
+  document.getElementById('vtopbar').style.display   = 'flex';
+  document.getElementById('vbottombar').style.display = 'flex';
+  document.getElementById('goalBarWrap').style.display = 'block';
+  document.getElementById('motivStrip').style.display  = 'block';
+  document.getElementById('streakBadge').style.display = 'block';
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled  = false;
+  document.getElementById('goalTarget').textContent = goal;
+
+  pollInterval = setInterval(pollState, 900);
+}
+
+/* ══════════════════════════════════════════════
+   STOP SESSION
+══════════════════════════════════════════════ */
+async function stopSession() {
+  document.getElementById('btnStop').disabled = true;
+  clearInterval(pollInterval);
+  clearInterval(quizTimerInt);
+  clearInterval(breakTimerInt);
+
+  // Close quiz if open
+  if (quizOpen) {
+    quizOpen = false;
+    document.getElementById('quizOverlay').classList.remove('show');
+    await fetch('/api/quiz_dismiss', { method: 'POST' });
+  }
+
+  const res = await fetch('/api/stop_session', { method: 'POST' });
+  if (!res.ok) return;
+
+  sessionActive = false;
+  document.getElementById('videoFeed').src = '';
+  document.getElementById('vtopbar').style.display    = 'none';
+  document.getElementById('vbottombar').style.display  = 'none';
+  document.getElementById('goalBarWrap').style.display = 'none';
+  document.getElementById('motivStrip').style.display  = 'none';
+  document.getElementById('streakBadge').style.display = 'none';
+  document.getElementById('overlayStart').style.display = 'flex';
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStop').disabled  = true;
+  hideAlert();
+  closeBreak();
+
+  // Show summary popup
+  showSummary();
+}
+
+/* ══════════════════════════════════════════════
+   POLL STATE
+══════════════════════════════════════════════ */
+async function pollState() {
+  if (!sessionActive) return;
+  let d;
+  try {
+    const r = await fetch('/api/state');
+    d = await r.json();
+  } catch(e) { return; }
+
+  // Save for summary
+  sessionSummary = d;
+
+  // Timer
+  document.getElementById('vtimer').textContent = d.elapsed;
+  document.getElementById('stTime').textContent = d.elapsed;
+
+  // Focus
+  const fc = { High:'#a6e3a1', Medium:'#fab387', Low:'#f38ba8', 'No Face':'#6c6f85' };
+  const fv = document.getElementById('focusBigVal');
+  fv.textContent = d.focus_label || '—';
+  fv.style.color = fc[d.focus_label] || '#cdd6f4';
+
+  // Emotion
+  const eicons = { Engaged:'😊', Bored:'😴', Confused:'😕', Frustrated:'😤' };
+  document.getElementById('emotionPill').textContent =
+    (eicons[d.emotion_label] || '') + ' ' + (d.emotion_label || 'Detecting...');
+
+  // Gauge
+  updateGauge(d.attention_score);
+
+  // Confidence
+  const fp = d.focus_proba || {};
+  setConf('confHigh','confHighPct', fp['High']   || 0);
+  setConf('confMed', 'confMedPct',  fp['Medium'] || 0);
+  setConf('confLow', 'confLowPct',  fp['Low']    || 0);
+
+  // Drowsiness
+  updateDrown(d.drowsiness_level, d.drowsiness_severity, d.current_ear || 0);
+
+  // Productivity
+  const prod = d.prod_score || 0;
+  document.getElementById('prodVal').textContent = prod + '/100';
+  document.getElementById('prodBar').style.width = prod + '%';
+  const grade = prod>=85?'A': prod>=70?'B': prod>=55?'C': prod>=40?'D':'F';
+  const gc = { A:'#a6e3a1', B:'#89b4fa', C:'#fab387', D:'#f38ba8', F:'#6c6f85' };
+  const ge = document.getElementById('prodGrade');
+  ge.textContent = grade; ge.style.color = gc[grade];
+
+  // Distribution
+  setBar('fdHigh','fdHPct', d.focus_high_pct || 0);
+  setBar('fdMed', 'fdMPct', d.focus_med_pct  || 0);
+  setBar('fdLow', 'fdLPct', d.focus_low_pct  || 0);
+
+  // Stats
+  document.getElementById('stDist').textContent = d.distraction_count || 0;
+  document.getElementById('stYawn').textContent = d.yawn_count || 0;
+  document.getElementById('stEng').textContent  = (d.emotion_engaged_pct || 0) + '%';
+
+  // Score chart
+  if (d.score_history && d.score_history.length) {
+    scoreChart.data.labels   = d.score_history.map((_,i) => i);
+    scoreChart.data.datasets[0].data = d.score_history;
+    scoreChart.update('none');
+  }
+
+  // EAR chart
+  if (d.ear_history && d.ear_history.length) {
+    earChart.data.labels = d.ear_history.map((_,i) => i);
+    earChart.data.datasets[0].data = d.ear_history;
+    // Color the line based on current EAR
+    const curEAR = d.current_ear || 0;
+    earChart.data.datasets[0].borderColor =
+      curEAR < 0.15 ? '#f38ba8' : curEAR < 0.20 ? '#fab387' : '#94e2d5';
+    earChart.update('none');
+  }
+
+  // Focus Streak
+  const streak    = d.focus_streak || 0;
+  const maxStreak = d.max_streak   || 0;
+  document.getElementById('streakVal').textContent = streak;
+  document.getElementById('streakMax').textContent = maxStreak;
+  const sb = document.getElementById('streakBadge');
+  if (streak >= 10) {
+    sb.textContent = `🔥 ${streak} streak`;
+    sb.style.display = 'block';
+    sb.style.borderColor = streak >= 30 ? '#f38ba8' : '#fab38766';
+    sb.style.color       = streak >= 30 ? '#f38ba8' : '#fab387';
+  } else {
+    sb.style.display = 'none';
+  }
+
+  // Goal progress
+  const goalScore  = d.goal_score  || 75;
+  const goalReachedAPI = d.goal_reached || false;
+  document.getElementById('goalCurrent').textContent = prod;
+  document.getElementById('goalTarget').textContent  = goalScore;
+  document.getElementById('goalBarLabel').textContent = `${prod} / ${goalScore}`;
+  const pct = Math.min(100, Math.round((prod / goalScore) * 100));
+  document.getElementById('goalBarFill').style.width  = pct + '%';
+  document.getElementById('goalProgFill').style.width = pct + '%';
+
+  if (goalReachedAPI && !goalReached) {
+    goalReached = true;
+    document.getElementById('goalReachedBadge').style.display = 'inline-block';
+    showGoalCelebrate(goalScore);
+    beepInfo();
+  }
+
+  // Motivational message
+  const motiv = d.motivational || '';
+  if (motiv && motiv !== lastMotivMsg) {
+    lastMotivMsg = motiv;
+    document.getElementById('motivText').textContent = motiv;
+  }
+
+  // Beep
+  if (d.beep) {
+    playBeep(d.beep_type || 'warning');
+  }
+
+  // Alert
+  if (d.alert && d.alert !== lastAlert) {
+    lastAlert = d.alert;
+    const icons = { emergency:'🚨', warning:'⚠️', break:'☕', info:'ℹ️' };
+    showAlert(d.alert, d.alert_type, icons[d.alert_type] || '🔔');
+  }
+
+  // Break suggestion
+  if (d.break_suggestion &&
+      d.break_suggestion.type === 'break_now' &&
+      d.break_suggestion.message !== lastBreakMsg) {
+    lastBreakMsg = d.break_suggestion.message;
+    showBreak(d.break_suggestion);
+  }
+
+  // Admin alert
+  if (d.admin_alert) showAdminAlert(d.admin_alert);
+
+  // Quiz — only trigger if not already open
+  if (d.quiz_due && !quizOpen && !quizAnswered) {
+    triggerQuiz();
+  }
+}
+
+/* ══════════════════════════════════════════════
+   GAUGE
+══════════════════════════════════════════════ */
+function updateGauge(score) {
+  const fill  = document.getElementById('gaugeFill');
+  const val   = document.getElementById('gaugeVal');
+  const sub   = document.getElementById('gaugeSub');
+  const total = 191.6;
+  const offset = total - (score / 100) * total;
+  fill.style.strokeDashoffset = offset;
+  const c = score>=70?'#a6e3a1': score>=40?'#fab387':'#f38ba8';
+  fill.style.stroke = c;
+  val.textContent   = score;
+  val.style.fill    = c;
+  sub.textContent   = score>=70?'🟢 Well focused': score>=40?'🟡 Moderate':'🔴 Low focus';
+}
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+function setConf(barId, pctId, val) {
+  document.getElementById(barId).style.width = val + '%';
+  document.getElementById(pctId).textContent = val + '%';
+}
+
+function setBar(barId, pctId, val) {
+  document.getElementById(barId).style.width = val + '%';
+  document.getElementById(pctId).textContent = val + '%';
+}
+
+function updateDrown(level, sev, ear) {
+  const labels = {
+    'Awake':'😊 Awake', 'Mild':'😐 Mild Drowsiness',
+    'Moderate':'😴 Moderate Drowsiness', 'Severe':'🚨 Severe Drowsiness'
+  };
+  document.getElementById('drownLabel').textContent = labels[level] || '😊 Awake';
+  document.getElementById('earVal').textContent     = 'EAR: ' + (ear||0).toFixed(3);
+  const colors = {
+    none:     ['#2a2a3e','#2a2a3e','#2a2a3e','#2a2a3e'],
+    mild:     ['#fab387','#2a2a3e','#2a2a3e','#2a2a3e'],
+    moderate: ['#fab387','#f38ba8','#2a2a3e','#2a2a3e'],
+    severe:   ['#f38ba8','#f38ba8','#f38ba8','#f38ba8'],
+  };
+  const segs = colors[sev||'none'] || colors['none'];
+  for (let i=1; i<=4; i++) {
+    document.getElementById('ds'+i).style.background = segs[i-1];
+  }
+}
+
+/* ══════════════════════════════════════════════
+   ALERT
+══════════════════════════════════════════════ */
+function showAlert(msg, type, icon) {
+  const b = document.getElementById('alertBanner');
+  document.getElementById('alertText').textContent = msg;
+  document.getElementById('alertIcon').textContent = icon || '🔔';
+  b.className = 'alert-banner alert-' + (type || 'info');
+  void b.offsetWidth;
+  b.classList.add('show');
+  if (alertTimeout) clearTimeout(alertTimeout);
+  if (type !== 'emergency') alertTimeout = setTimeout(hideAlert, 5500);
+}
+function hideAlert() {
+  document.getElementById('alertBanner').classList.remove('show');
+  lastAlert = null;
+}
+
+/* ══════════════════════════════════════════════
+   BREAK (with countdown)
+══════════════════════════════════════════════ */
+function showBreak(suggestion) {
+  const isNow = suggestion.type === 'break_now';
+  document.getElementById('bpTitle').textContent = isNow ? '☕ Break Time!' : '⏰ Break Coming Up';
+  document.getElementById('bpMsg').textContent   = suggestion.message || 'Time for a short break!';
+  document.getElementById('breakPopup').classList.add('show');
+  playBeep('break');
+
+  if (isNow) {
+    // Start 5 min countdown
+    let secs = 300;
+    const timerEl = document.getElementById('bpTimer');
+    timerEl.style.display = 'block';
+    clearInterval(breakTimerInt);
+    breakTimerInt = setInterval(() => {
+      secs--;
+      const m = Math.floor(secs/60).toString().padStart(2,'0');
+      const s = (secs%60).toString().padStart(2,'0');
+      timerEl.textContent = `${m}:${s}`;
+      if (secs <= 0) { clearInterval(breakTimerInt); closeBreak(); }
+    }, 1000);
+  }
+}
+function closeBreak() {
+  clearInterval(breakTimerInt);
+  document.getElementById('breakPopup').classList.remove('show');
+  document.getElementById('bpTimer').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════════
+   ADMIN ALERT
+══════════════════════════════════════════════ */
+function showAdminAlert(msg) {
+  document.getElementById('adminAlertMsg').textContent = msg;
+  const p = document.getElementById('adminAlertPopup');
+  p.classList.add('show');
+  playBeep('info');
+  setTimeout(() => p.classList.remove('show'), 8000);
+}
+
+/* ══════════════════════════════════════════════
+   GOAL CELEBRATE
+══════════════════════════════════════════════ */
+function showGoalCelebrate(goal) {
+  const el  = document.getElementById('goalCelebrate');
+  const sub = document.getElementById('gcSub');
+  sub.textContent = `You hit your target of ${goal}! 🎉`;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+/* ══════════════════════════════════════════════
+   QUIZ (FULLY FIXED)
+══════════════════════════════════════════════ */
+function triggerQuiz() {
+  if (!QUIZ_BANK || !QUIZ_BANK.length) return;
+  if (quizOpen) return;  // safety guard
+
+  const q = QUIZ_BANK[Math.floor(Math.random() * QUIZ_BANK.length)];
+  currentQuiz  = q;
+  quizAnswered = false;
+  quizOpen     = true;
+
+  // Update pts label based on quiz streak
+  const qs = sessionSummary.quiz_streak || 0;
+  document.getElementById('quizPtsLabel').textContent = qs >= 2 ? '+20 pts (streak!)' : '+10 pts';
+
+  document.getElementById('quizQ').textContent = q.q;
+  document.getElementById('quizExplain').classList.remove('show');
+  document.getElementById('quizCloseBtn').style.display = 'none';
+
+  const opts = document.getElementById('quizOpts');
+  opts.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className   = 'qopt';
+    btn.textContent = opt;
+    btn.onclick = () => answerQuiz(i, btn);
+    opts.appendChild(btn);
+  });
+
+  document.getElementById('quizOverlay').classList.add('show');
+
+  // Start 15-second countdown timer
+  quizSecsLeft = 15;
+  updateQuizTimer(15, 15);
+  clearInterval(quizTimerInt);
+  quizTimerInt = setInterval(() => {
+    quizSecsLeft--;
+    updateQuizTimer(quizSecsLeft, 15);
+    if (quizSecsLeft <= 0) {
+      clearInterval(quizTimerInt);
+      // Auto-dismiss on timeout
+      if (!quizAnswered) {
+        quizAnswered = true;
+        const ex = document.getElementById('quizExplain');
+        ex.textContent = '⏱ Time\'s up! ' + (q.explanation || '');
+        ex.classList.add('show');
+        // Mark correct answer
+        document.querySelectorAll('.qopt').forEach((b, i) => {
+          b.disabled = true;
+          if (i === q.ans) b.classList.add('correct');
+        });
+        document.getElementById('quizCloseBtn').style.display = 'block';
+        fetch('/api/quiz_answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correct: false })
+        });
+      }
+    }
+  }, 1000);
+}
+
+function updateQuizTimer(secs, total) {
+  const circ = document.getElementById('qTimerCircle');
+  const num  = document.getElementById('qTimerNum');
+  const circumference = 87.96;
+  const offset = circumference - (secs / total) * circumference;
+  circ.style.strokeDashoffset = offset;
+  num.textContent = secs;
+  // Color urgency
+  if (secs <= 5)      { circ.style.stroke = '#f38ba8'; num.style.color = '#f38ba8'; }
+  else if (secs <= 8) { circ.style.stroke = '#fab387'; num.style.color = '#fab387'; }
+  else                { circ.style.stroke = '#89b4fa'; num.style.color = '#cdd6f4'; }
+}
+
+async function answerQuiz(idx, btn) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  clearInterval(quizTimerInt);
+
+  const correct = idx === currentQuiz.ans;
+  document.querySelectorAll('.qopt').forEach(b => b.disabled = true);
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  document.querySelectorAll('.qopt')[currentQuiz.ans].classList.add('correct');
+
+  const ex = document.getElementById('quizExplain');
+  ex.textContent = (correct ? '✅ Correct! ' : '❌ Wrong! ') + (currentQuiz.explanation || '');
+  ex.classList.add('show');
+  document.getElementById('quizCloseBtn').style.display = 'block';
+
+  const r = await fetch('/api/quiz_answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ correct })
+  });
+  const data = await r.json();
+
+  // Show result in pts label
+  document.getElementById('quizPtsLabel').textContent = data.message || '';
+
+  if (correct) beepInfo();
+}
+
+function closeQuiz() {
+  clearInterval(quizTimerInt);
+  document.getElementById('quizOverlay').classList.remove('show');
+  quizAnswered = false;
+  quizOpen     = false;  // FIXED: reset so next quiz can show
+}
+
+/* ══════════════════════════════════════════════
+   SESSION SUMMARY POPUP
+══════════════════════════════════════════════ */
+function showSummary() {
+  const d     = sessionSummary;
+  const prod  = d.prod_score || 0;
+  const grade = prod>=85?'A': prod>=70?'B': prod>=55?'C': prod>=40?'D':'F';
+  const gc    = { A:'#a6e3a1', B:'#89b4fa', C:'#fab387', D:'#f38ba8', F:'#6c6f85' };
+
+  // Profile icon for summary
+  const profileIcons = {
+    student:'🎓', worker:'💼', driver:'🚗',
+    gamer:'🎮', medical:'🏥', athlete:'🏃'
+  };
+  document.getElementById('sumIcon').textContent   = profileIcons[PROFILE_ID] || '✅';
+  document.getElementById('sumSub').textContent    = `${PROFILE_ID.charAt(0).toUpperCase()+PROFILE_ID.slice(1)} session complete`;
+  document.getElementById('sumDur').textContent    = d.elapsed   || '00:00';
+  document.getElementById('sumScore').textContent  = prod;
+  document.getElementById('sumStreak').textContent = d.max_streak || 0;
+  document.getElementById('sumDist').textContent   = d.distraction_count || 0;
+  document.getElementById('sumYawn').textContent   = d.yawn_count || 0;
+  document.getElementById('sumHighPct').textContent = (d.focus_high_pct || 0) + '%';
+
+  const gradeEl = document.getElementById('sumGrade');
+  gradeEl.textContent = grade;
+  gradeEl.style.color = gc[grade];
+  gradeEl.style.borderColor = gc[grade];
+
+  // Estimate points (rough, server calculates exact)
+  const estPts = Math.round(prod * 2 + (d.focus_high_pct||0) + 50);
+  document.getElementById('sumPts').textContent = '+' + estPts;
+
+  document.getElementById('summaryOverlay').classList.add('show');
+}
+
+function goToDashboard() {
+  location.href = '/dashboard';
+}
+</script>
+</body>
+</html>

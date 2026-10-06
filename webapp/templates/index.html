@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNITO — Home</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',sans-serif; background:#0f0f1a; color:#cdd6f4; min-height:100vh; }
+
+/* ── Navbar ── */
+nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(15,15,26,.92); backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(69,71,90,.4);
+  padding:0 24px; height:56px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.nav-logo { font-size:18px; font-weight:900; color:#89b4fa; letter-spacing:3px; text-decoration:none; }
+.nav-links { display:flex; gap:3px; }
+.nav-link { padding:6px 12px; border-radius:7px; color:#6c6f85; text-decoration:none; font-size:12px; transition:all .2s; }
+.nav-link:hover, .nav-link.active { background:rgba(137,180,250,.1); color:#89b4fa; }
+.nav-right { display:flex; align-items:center; gap:8px; }
+.nav-user {
+  display:flex; align-items:center; gap:7px; padding:4px 10px 4px 5px;
+  background:rgba(49,50,68,.5); border:1px solid rgba(69,71,90,.4);
+  border-radius:99px; text-decoration:none; font-size:12px; color:#cdd6f4; transition:all .2s;
+}
+.nav-user:hover { border-color:rgba(137,180,250,.3); }
+.nav-av {
+  width:26px; height:26px; border-radius:50%;
+  background:linear-gradient(135deg,#89b4fa,#cba6f7);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:#1e1e2e; overflow:hidden;
+}
+.nav-av img { width:100%; height:100%; object-fit:cover; }
+.nav-signout {
+  padding:5px 12px; border-radius:7px; font-size:12px; color:#6c6f85;
+  text-decoration:none; border:1px solid rgba(69,71,90,.4); transition:all .2s;
+}
+.nav-signout:hover { color:#f38ba8; border-color:rgba(243,139,168,.3); background:rgba(243,139,168,.06); }
+
+/* ── Grade colors (FIXED — was missing) ── */
+.grade-A { background:rgba(166,227,161,.2); color:#a6e3a1; border:1px solid rgba(166,227,161,.4); }
+.grade-B { background:rgba(137,180,250,.2); color:#89b4fa; border:1px solid rgba(137,180,250,.4); }
+.grade-C { background:rgba(250,179,135,.2); color:#fab387; border:1px solid rgba(250,179,135,.4); }
+.grade-D { background:rgba(243,139,168,.2); color:#f38ba8; border:1px solid rgba(243,139,168,.4); }
+.grade-F { background:rgba(108,111,133,.2); color:#6c6f85; border:1px solid rgba(108,111,133,.4); }
+
+/* ── Hero ── */
+.hero { max-width:1100px; margin:0 auto; padding:48px 24px 28px; text-align:center; }
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:6px; padding:4px 14px; border-radius:99px;
+  background:rgba(137,180,250,.1); border:1px solid rgba(137,180,250,.2);
+  font-size:11px; color:#89b4fa; font-weight:600; margin-bottom:18px; letter-spacing:.5px;
+}
+.hero-title { font-size:46px; font-weight:900; line-height:1.1; margin-bottom:14px; }
+.hero-grad {
+  background:linear-gradient(135deg,#89b4fa,#cba6f7,#f38ba8);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.hero-sub { font-size:15px; color:#9399b2; max-width:460px; margin:0 auto 24px; line-height:1.6; }
+
+/* ── Streak badge ── */
+.streak-badge-hero {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 20px; border-radius:99px; margin-bottom:18px;
+  background:rgba(250,179,135,.1); border:1px solid rgba(250,179,135,.3);
+  font-size:13px; font-weight:700; color:#fab387;
+  animation: streakPulse 2s ease-in-out infinite;
+}
+@keyframes streakPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(250,179,135,0); }
+  50%      { box-shadow: 0 0 0 8px rgba(250,179,135,.08); }
+}
+.streak-badge-hero .streak-num { font-size:18px; }
+
+/* ── Daily goal bar ── */
+.daily-goal-wrap {
+  max-width:520px; margin:0 auto 22px;
+  background:rgba(30,30,46,.8); border:1px solid rgba(69,71,90,.4);
+  border-radius:13px; padding:14px 18px;
+}
+.dg-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.dg-title  { font-size:11px; color:#9399b2; font-weight:600; }
+.dg-right  { display:flex; align-items:center; gap:8px; }
+.dg-val    { font-size:12px; font-weight:700; color:#cdd6f4; }
+.dg-input  {
+  width:48px; background:rgba(49,50,68,.7); border:1px solid rgba(69,71,90,.5);
+  border-radius:6px; padding:3px 6px; color:#cdd6f4; font-size:11px;
+  text-align:center; outline:none;
+}
+.dg-input:focus { border-color:rgba(137,180,250,.4); }
+.dg-set-btn {
+  padding:3px 10px; border-radius:6px; border:1px solid rgba(137,180,250,.3);
+  background:rgba(137,180,250,.1); color:#89b4fa; font-size:10px;
+  font-weight:700; cursor:pointer; transition:all .2s;
+}
+.dg-set-btn:hover { background:rgba(137,180,250,.2); }
+.dg-bar-bg   { height:8px; background:rgba(49,50,68,.8); border-radius:99px; overflow:hidden; margin-bottom:5px; }
+.dg-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#89b4fa,#cba6f7); transition:width .8s ease; }
+.dg-footer   { display:flex; justify-content:space-between; font-size:10px; color:#6c6f85; }
+.dg-footer span { color:#89b4fa; font-weight:700; }
+
+/* ── Sparkline ── */
+.sparkline-wrap {
+  max-width:520px; margin:0 auto 22px;
+  background:rgba(30,30,46,.8); border:1px solid rgba(69,71,90,.4);
+  border-radius:13px; padding:14px 18px;
+}
+.sp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.sp-title  { font-size:11px; color:#9399b2; font-weight:600; text-transform:uppercase; letter-spacing:1px; }
+.sp-trend  { font-size:11px; font-weight:700; }
+.sp-trend.up   { color:#a6e3a1; }
+.sp-trend.down { color:#f38ba8; }
+.sp-trend.flat { color:#6c6f85; }
+
+/* ── Last session strip ── */
+.last-session-strip { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom:28px; }
+.ls-card { background:rgba(30,30,46,.8); border:1px solid rgba(69,71,90,.4); border-radius:11px; padding:12px 20px; text-align:center; min-width:100px; }
+.ls-val  { font-size:22px; font-weight:800; display:block; margin-bottom:2px; }
+.ls-lbl  { font-size:9px; color:#6c6f85; text-transform:uppercase; letter-spacing:1px; }
+.last-sess-hdr { font-size:11px; color:#6c6f85; text-align:center; margin-bottom:10px; }
+
+/* ── Quick stats ── */
+.quick-stats {
+  display:flex; justify-content:center; margin-bottom:40px;
+  background:rgba(30,30,46,.7); border:1px solid rgba(69,71,90,.4);
+  border-radius:13px; overflow:hidden; max-width:640px;
+  margin-left:auto; margin-right:auto;
+}
+.qs { flex:1; padding:16px 12px; text-align:center; border-right:1px solid rgba(69,71,90,.4); }
+.qs:last-child { border-right:none; }
+.qs-val { font-size:20px; font-weight:800; display:block; color:#89b4fa; margin-bottom:3px; }
+.qs-lbl { font-size:9px; color:#6c6f85; text-transform:uppercase; letter-spacing:1px; }
+
+/* ── Section ── */
+.section { max-width:1100px; margin:0 auto; padding:0 24px 52px; }
+.sec-hdr { text-align:center; margin-bottom:28px; }
+.sec-title { font-size:22px; font-weight:800; color:#cdd6f4; margin-bottom:6px; }
+.sec-sub   { font-size:13px; color:#6c6f85; }
+
+/* ── Profile grid ── */
+.profile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+@media(max-width:900px) { .profile-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:560px) {
+  .profile-grid { grid-template-columns:1fr; }
+  .hero-title   { font-size:30px; }
+  .quick-stats  { flex-direction:column; max-width:260px; }
+  .qs { border-right:none; border-bottom:1px solid rgba(69,71,90,.4); }
+  .qs:last-child { border-bottom:none; }
+}
+
+/* ── Profile card ── */
+.pcard {
+  background:rgba(30,30,46,.8); border:1px solid rgba(69,71,90,.4);
+  border-radius:16px; padding:22px; cursor:pointer; transition:all .28s;
+  position:relative; overflow:hidden; text-decoration:none; display:block; color:inherit;
+}
+.pcard::before {
+  content:''; position:absolute; inset:0; opacity:0;
+  background:var(--grad); transition:opacity .3s; pointer-events:none;
+}
+.pcard:hover { transform:translateY(-5px); border-color:var(--c); box-shadow:0 12px 36px rgba(0,0,0,.3); }
+.pcard:hover::before { opacity:.06; }
+.pcard-top  { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.pcard-icon { font-size:36px; display:block; }
+.pcard-badge { padding:3px 10px; border-radius:99px; font-size:10px; font-weight:600; background:rgba(49,50,68,.9); color:var(--c); border:1px solid var(--c); opacity:.7; }
+.pcard-name  { font-size:16px; font-weight:800; color:#cdd6f4; margin-bottom:5px; }
+.pcard-desc  { font-size:12px; color:#9399b2; line-height:1.5; margin-bottom:14px; }
+.pcard-metrics { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+.pm-tag { padding:3px 9px; border-radius:99px; font-size:10px; font-weight:600; background:rgba(49,50,68,.7); color:#6c6f85; border:1px solid rgba(69,71,90,.5); }
+.pcard-footer { display:flex; align-items:center; justify-content:space-between; }
+.pcard-alert  { font-size:10px; color:#6c6f85; display:flex; align-items:center; gap:4px; }
+.pcard-btn    { padding:7px 18px; background:var(--c); color:#1e1e2e; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; text-decoration:none; }
+.pcard-btn:hover { transform:scale(1.05); }
+
+/* ── How it works ── */
+.hiw-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media(max-width:800px) { .hiw-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:420px) { .hiw-grid { grid-template-columns:1fr; } }
+.hiw-card { background:rgba(30,30,46,.7); border:1px solid rgba(69,71,90,.35); border-radius:13px; padding:20px; text-align:center; }
+.hiw-num  { width:32px; height:32px; border-radius:50%; background:rgba(137,180,250,.12); border:1px solid rgba(137,180,250,.25); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#89b4fa; margin:0 auto 12px; }
+.hiw-icon  { font-size:28px; margin-bottom:8px; }
+.hiw-title { font-size:13px; font-weight:700; color:#cdd6f4; margin-bottom:5px; }
+.hiw-desc  { font-size:11px; color:#6c6f85; line-height:1.5; }
+
+/* ── Footer ── */
+footer { border-top:1px solid rgba(69,71,90,.3); padding:20px 24px; text-align:center; font-size:11px; color:#45475a; }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+  <a class="nav-logo" href="/">COGNITO</a>
+  <div class="nav-links">
+    <a class="nav-link active" href="/">Home</a>
+    <a class="nav-link" href="/dashboard">Dashboard</a>
+    <a class="nav-link" href="/report">Reports</a>
+    <a class="nav-link" href="/leaderboard">🏆 Leaderboard</a>
+    {% if user and user.is_admin %}
+    <a class="nav-link" href="/admin">👑 Admin</a>
+    {% endif %}
+  </div>
+  <div class="nav-right">
+    <a class="nav-user" href="/profile">
+      <div class="nav-av">
+        {% if user and user.photo %}<img src="{{ user.photo }}" alt="">
+        {% else %}{{ user.name[0].upper() if user else 'U' }}{% endif %}
+      </div>
+      {{ user.name.split()[0] if user else 'User' }}
+    </a>
+    <a class="nav-signout" href="/logout">Sign out</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">✨ AI-Powered Focus Analysis</div>
+  <h1 class="hero-title">
+    Welcome back,<br>
+    <span class="hero-grad">{{ user.name.split()[0] if user else 'User' }}!</span>
+  </h1>
+  <p class="hero-sub">Choose a monitoring profile and track your focus, drowsiness and productivity in real time.</p>
+
+  <!-- Streak days badge (shown if streak >= 2) -->
+  {% set streak = bests.current_streak if bests else 0 %}
+  {% if streak >= 2 %}
+  <div class="streak-badge-hero">
+    🔥 <span class="streak-num">{{ streak }}</span> day streak! Keep it going!
+  </div>
+  {% endif %}
+
+  <!-- Daily study goal -->
+  <div class="daily-goal-wrap">
+    <div class="dg-header">
+      <span class="dg-title">📅 Today's Study Goal</span>
+      <div class="dg-right">
+        <span class="dg-val" id="dgVal">0 / <span id="dgTarget">120</span> min</span>
+        <input type="number" class="dg-input" id="dgInput" min="15" max="480" value="120" placeholder="120">
+        <button class="dg-set-btn" onclick="setDailyGoal()">Set</button>
+      </div>
+    </div>
+    <div class="dg-bar-bg">
+      <div class="dg-bar-fill" id="dgBar" style="width:0%"></div>
+    </div>
+    <div class="dg-footer">
+      <span id="dgStatus">Start a session to track progress</span>
+      <span id="dgPct">0%</span>
+    </div>
+  </div>
+
+  <!-- Sparkline: last 7 sessions -->
+  {% if total_sessions >= 2 %}
+  <div class="sparkline-wrap">
+    <div class="sp-header">
+      <span class="sp-title">📈 Last 7 Sessions — Score Trend</span>
+      <span class="sp-trend" id="spTrend">Loading...</span>
+    </div>
+    <canvas id="sparklineChart" height="55"></canvas>
+  </div>
+  {% endif %}
+
+  <!-- Last session summary -->
+  {% if last_session %}
+  <div class="last-sess-hdr">
+    📋 Last session — {{ last_session.date }} at {{ last_session.time[:5] }}
+  </div>
+  <div class="last-session-strip">
+    <div class="ls-card">
+      <span class="ls-val" style="color:{{ '#a6e3a1' if last_session.avg_productivity >= 70 else '#fab387' if last_session.avg_productivity >= 50 else '#f38ba8' }}">
+        {{ last_session.avg_productivity }}
+      </span>
+      <div class="ls-lbl">Score</div>
+    </div>
+    <div class="ls-card">
+      <span class="ls-val" style="color:#a6e3a1">{{ last_session.focus_high_pct }}%</span>
+      <div class="ls-lbl">High Focus</div>
+    </div>
+    <div class="ls-card">
+      <span class="ls-val" style="color:#89b4fa">{{ last_session.duration }}</span>
+      <div class="ls-lbl">Duration</div>
+    </div>
+    <div class="ls-card">
+      <span class="ls-val" style="color:#fab387">{{ last_session.total_distractions }}</span>
+      <div class="ls-lbl">Distractions</div>
+    </div>
+    <div class="ls-card">
+      <span class="ls-val">
+        <span class="grade-{{ last_session.grade }}" style="padding:2px 10px;border-radius:99px;font-weight:800;font-size:16px">
+          {{ last_session.grade }}
+        </span>
+      </span>
+      <div class="ls-lbl">Grade</div>
+    </div>
+    {% if last_session.yawn_count is defined and last_session.yawn_count > 0 %}
+    <div class="ls-card">
+      <span class="ls-val" style="color:#fab387">{{ last_session.yawn_count }}</span>
+      <div class="ls-lbl">Yawns</div>
+    </div>
+    {% endif %}
+    {% if last_session.note is defined and last_session.note %}
+    <div class="ls-card" style="min-width:160px;max-width:220px">
+      <span style="font-size:11px;color:#9399b2;font-style:italic">"{{ last_session.note }}"</span>
+      <div class="ls-lbl" style="margin-top:4px">Your Note</div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Quick stats -->
+  <div class="quick-stats" style="margin-bottom:40px">
+    <div class="qs">
+      <span class="qs-val">{{ total_sessions }}</span>
+      <div class="qs-lbl">Sessions</div>
+    </div>
+    <div class="qs">
+      <span class="qs-val" style="color:#a6e3a1">{{ user.total_points if user else 0 }}</span>
+      <div class="qs-lbl">Points</div>
+    </div>
+    <div class="qs">
+      <span class="qs-val" style="color:#fab387">{{ streak }}🔥</span>
+      <div class="qs-lbl">Day Streak</div>
+    </div>
+    <div class="qs">
+      <span class="qs-val" style="color:#cba6f7">6</span>
+      <div class="qs-lbl">Profiles</div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile cards -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-title">Choose Your Profile</div>
+    <div class="sec-sub">Each profile has custom thresholds, alerts and metrics for your use case</div>
+  </div>
+  <div class="profile-grid">
+    {% for pid, p in profiles.items() %}
+    <a class="pcard" href="/monitor/{{ pid }}" style="--c:{{ p.color }};--grad:{{ p.gradient }}">
+      <div class="pcard-top">
+        <span class="pcard-icon">{{ p.icon }}</span>
+        <span class="pcard-badge">{{ p.metrics|length }} metrics</span>
+      </div>
+      <div class="pcard-name">{{ p.name }}</div>
+      <div class="pcard-desc">{{ p.description }}</div>
+      <div class="pcard-metrics">
+        {% for m in p.metrics %}<span class="pm-tag">{{ m }}</span>{% endfor %}
+      </div>
+      <div class="pcard-footer">
+        <div class="pcard-alert">🔔 Smart alerts</div>
+        <span class="pcard-btn">Start →</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- How it works -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-title">How It Works</div>
+    <div class="sec-sub">Real-time analysis, no data ever sent to any server</div>
+  </div>
+  <div class="hiw-grid">
+    <div class="hiw-card">
+      <div class="hiw-num">1</div>
+      <div class="hiw-icon">📷</div>
+      <div class="hiw-title">Webcam Capture</div>
+      <div class="hiw-desc">Live video processed locally. Nothing is recorded or uploaded.</div>
+    </div>
+    <div class="hiw-card">
+      <div class="hiw-num">2</div>
+      <div class="hiw-icon">🎯</div>
+      <div class="hiw-title">Face Detection</div>
+      <div class="hiw-desc">MediaPipe tracks 478 facial landmarks at 30fps.</div>
+    </div>
+    <div class="hiw-card">
+      <div class="hiw-num">3</div>
+      <div class="hiw-icon">📐</div>
+      <div class="hiw-title">Feature Extraction</div>
+      <div class="hiw-desc">EAR, MAR, gaze vector and head pose calculated per frame.</div>
+    </div>
+    <div class="hiw-card">
+      <div class="hiw-num">4</div>
+      <div class="hiw-icon">🤖</div>
+      <div class="hiw-title">AI Analysis</div>
+      <div class="hiw-desc">Random Forest classifies focus and emotion with smart alerts.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  COGNITO — Real-time Focus Monitoring &nbsp;·&nbsp;
+  Built with MediaPipe &amp; scikit-learn &nbsp;·&nbsp;
+  <a href="/dashboard" style="color:#89b4fa;text-decoration:none">Dashboard</a>
+  &nbsp;·&nbsp;
+  <a href="/leaderboard" style="color:#89b4fa;text-decoration:none">Leaderboard</a>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+/* ── Sparkline ── */
+{% if total_sessions >= 2 %}
+(async function() {
+  try {
+    const r = await fetch('/api/sparkline');
+    const d = await r.json();
+    if (!d.scores || d.scores.length < 2) return;
+
+    const scores = d.scores;
+    const labels = d.labels;
+    const first  = scores[0];
+    const last   = scores[scores.length - 1];
+    const diff   = last - first;
+    const trendEl = document.getElementById('spTrend');
+
+    if (diff > 3) {
+      trendEl.textContent = `↑ +${diff.toFixed(0)} pts improving`;
+      trendEl.className = 'sp-trend up';
+    } else if (diff < -3) {
+      trendEl.textContent = `↓ ${diff.toFixed(0)} pts declining`;
+      trendEl.className = 'sp-trend down';
+    } else {
+      trendEl.textContent = '→ Steady';
+      trendEl.className = 'sp-trend flat';
+    }
+
+    new Chart(document.getElementById('sparklineChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: scores,
+          borderColor: '#89b4fa',
+          backgroundColor: 'rgba(137,180,250,.08)',
+          borderWidth: 2, fill: true, tension: 0.4,
+          pointRadius: 4, pointBackgroundColor: scores.map(v =>
+            v >= 70 ? '#a6e3a1' : v >= 50 ? '#fab387' : '#f38ba8'),
+          pointBorderColor: 'transparent',
+        }]
+      },
+      options: {
+        responsive: true, animation: { duration: 600 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` Score: ${ctx.raw}  Grade: ${ctx.raw>=85?'A':ctx.raw>=70?'B':ctx.raw>=55?'C':ctx.raw>=40?'D':'F'}`
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color:'#6c6f85', font:{size:9} }, grid: { display:false } },
+          y: { min:0, max:100, ticks: { color:'#6c6f85', font:{size:9}, stepSize:25 }, grid: { color:'rgba(69,71,90,.2)' } }
+        }
+      }
+    });
+  } catch(e) {}
+})();
+{% endif %}
+
+/* ── Daily Goal ── */
+(async function() {
+  try {
+    const r = await fetch('/api/daily_goal');
+    const d = await r.json();
+    updateGoalUI(d.goal_mins, d.studied_mins);
+    document.getElementById('dgInput').value = d.goal_mins;
+    document.getElementById('dgTarget').textContent = d.goal_mins;
+  } catch(e) {}
+})();
+
+function updateGoalUI(goal, studied) {
+  const pct = Math.min(100, Math.round((studied / goal) * 100));
+  document.getElementById('dgBar').style.width = pct + '%';
+  document.getElementById('dgVal').innerHTML = `${studied} / <span id="dgTarget">${goal}</span> min`;
+  document.getElementById('dgPct').textContent = pct + '%';
+  if (studied >= goal) {
+    document.getElementById('dgStatus').innerHTML = '✅ <strong style="color:#a6e3a1">Daily goal reached!</strong>';
+    document.getElementById('dgBar').style.background = 'linear-gradient(90deg,#a6e3a1,#94e2d5)';
+  } else {
+    const left = goal - studied;
+    document.getElementById('dgStatus').textContent = `${left} min remaining`;
+  }
+}
+
+async function setDailyGoal() {
+  const goal = parseInt(document.getElementById('dgInput').value) || 120;
+  try {
+    const r = await fetch('/api/daily_goal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goal_mins: goal })
+    });
+    const d = await r.json();
+    document.getElementById('dgTarget').textContent = goal;
+    updateGoalUI(goal, d.studied_mins);
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

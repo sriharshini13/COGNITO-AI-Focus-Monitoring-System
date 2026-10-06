@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNITO — Welcome</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f0f1a;
+    min-height: 100vh;
+    color: #cdd6f4;
+    overflow-x: hidden;
+  }
+
+  /* ── Background ── */
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%,
+        rgba(137,180,250,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%,
+        rgba(203,166,247,0.1) 0%, transparent 60%);
+  }
+
+  /* ── Container ── */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    margin-bottom: 40px;
+  }
+  .progress-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 12px;
+  }
+  .step-dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(49,50,68,0.8);
+    border: 2px solid #45475a;
+    display: flex; align-items: center;
+    justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: #6c6f85;
+    transition: all 0.4s;
+    position: relative; z-index: 1;
+  }
+  .step-dot.active {
+    background: linear-gradient(135deg,#89b4fa,#cba6f7);
+    border-color: transparent;
+    color: #1e1e2e;
+    box-shadow: 0 0 20px rgba(137,180,250,0.4);
+  }
+  .step-dot.done {
+    background: #a6e3a1;
+    border-color: transparent;
+    color: #1e1e2e;
+  }
+  .step-line {
+    width: 80px; height: 2px;
+    background: #45475a;
+    transition: background 0.4s;
+  }
+  .step-line.done { background: #a6e3a1; }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0px;
+  }
+  .step-label {
+    font-size: 11px;
+    color: #6c6f85;
+    text-align: center;
+    width: 80px;
+    transition: color 0.3s;
+  }
+  .step-label.active { color: #89b4fa; }
+
+  /* ── Steps ── */
+  .step { display: none; animation: fadeIn 0.4s ease; }
+  .step.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── Step header ── */
+  .step-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .step-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 20px rgba(137,180,250,0.3));
+  }
+  .step-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #cdd6f4;
+    margin-bottom: 8px;
+  }
+  .step-title span { color: #89b4fa; }
+  .step-desc {
+    font-size: 15px;
+    color: #6c6f85;
+    line-height: 1.6;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── Glass card ── */
+  .glass {
+    background: rgba(30,30,46,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(137,180,250,0.15);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  /* ── Photo upload ── */
+  .photo-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .photo-circle {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(49,50,68,0.8);
+    border: 3px dashed rgba(137,180,250,0.4);
+    display: flex; align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    overflow: hidden;
+    position: relative;
+  }
+  .photo-circle:hover {
+    border-color: #89b4fa;
+    background: rgba(137,180,250,0.1);
+  }
+  .photo-circle img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .photo-placeholder {
+    text-align: center;
+  }
+  .photo-placeholder .pi { font-size: 36px; }
+  .photo-placeholder p {
+    font-size: 11px;
+    color: #6c6f85;
+    margin-top: 4px;
+  }
+  .photo-upload input[type=file] { display: none; }
+
+  /* ── Name input ── */
+  .name-field {
+    margin-bottom: 0;
+  }
+  .name-field label {
+    display: block;
+    font-size: 12px;
+    color: #9399b2;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .name-field input {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(49,50,68,0.6);
+    border: 1px solid rgba(69,71,90,0.8);
+    border-radius: 12px;
+    color: #cdd6f4;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s;
+    text-align: center;
+    font-weight: 600;
+  }
+  .name-field input:focus {
+    border-color: #89b4fa;
+    box-shadow: 0 0 0 3px rgba(137,180,250,0.1);
+  }
+
+  /* ── Profile grid ── */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 14px;
+  }
+  .profile-option {
+    background: rgba(49,50,68,0.6);
+    border: 2px solid rgba(69,71,90,0.6);
+    border-radius: 14px;
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .profile-option:hover {
+    border-color: var(--c);
+    background: rgba(49,50,68,0.9);
+    transform: translateY(-3px);
+  }
+  .profile-option.selected {
+    border-color: var(--c);
+    background: rgba(49,50,68,0.9);
+    box-shadow: 0 0 0 3px rgba(137,180,250,0.15),
+                0 8px 24px rgba(0,0,0,0.3);
+  }
+  .profile-option .po-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .profile-option .po-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--c);
+    margin-bottom: 4px;
+  }
+  .profile-option .po-desc {
+    font-size: 10px;
+    color: #6c6f85;
+    line-height: 1.4;
+  }
+
+  /* ── Features step ── */
+  .features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .feature-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(49,50,68,0.4);
+    border-radius: 12px;
+    border: 1px solid rgba(69,71,90,0.4);
+  }
+  .feature-row .fr-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .feature-row h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #cdd6f4;
+    margin-bottom: 4px;
+  }
+  .feature-row p {
+    font-size: 12px;
+    color: #6c6f85;
+    line-height: 1.5;
+  }
+
+  /* ── Nav buttons ── */
+  .nav-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .btn-back {
+    flex: 0.4;
+    padding: 14px;
+    background: rgba(49,50,68,0.6);
+    border: 1px solid #45475a;
+    border-radius: 12px;
+    color: #9399b2;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-back:hover {
+    background: rgba(49,50,68,0.9);
+    color: #cdd6f4;
+  }
+  .btn-next {
+    flex: 1;
+    padding: 14px;
+    background: linear-gradient(135deg,#89b4fa,#cba6f7);
+    border: none;
+    border-radius: 12px;
+    color: #1e1e2e;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(137,180,250,0.3);
+  }
+
+  /* ── Welcome step ── */
+  .welcome-name {
+    font-size: 40px;
+    font-weight: 900;
+    color: #89b4fa;
+    text-align: center;
+    margin: 16px 0 8px;
+  }
+  .ready-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(166,227,161,0.15);
+    border: 1px solid rgba(166,227,161,0.3);
+    color: #a6e3a1;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 auto 28px;
+    display: flex;
+    justify-content: center;
+    width: fit-content;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<div class="container">
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step-dot active" id="dot1">1</div>
+      <div class="step-line"      id="line1"></div>
+      <div class="step-dot"       id="dot2">2</div>
+      <div class="step-line"      id="line2"></div>
+      <div class="step-dot"       id="dot3">3</div>
+      <div class="step-line"      id="line3"></div>
+      <div class="step-dot"       id="dot4">4</div>
+    </div>
+    <div class="progress-labels">
+      <div class="step-label active" id="lbl1">Profile</div>
+      <div class="step-label"        id="lbl2">Use Case</div>
+      <div class="step-label"        id="lbl3">Features</div>
+      <div class="step-label"        id="lbl4">Ready!</div>
+    </div>
+  </div>
+
+  <!-- ── Step 1: Profile setup ── -->
+  <div class="step active" id="step1">
+    <div class="step-header">
+      <span class="step-icon">👤</span>
+      <div class="step-title">
+        Welcome to <span>COGNITO</span>
+      </div>
+      <div class="step-desc">
+        Let's set up your profile. Add a photo and
+        confirm your name to personalize your experience.
+      </div>
+    </div>
+
+    <div class="glass">
+      <div class="photo-upload">
+        <div class="photo-circle"
+             onclick="document.getElementById('photoInput').click()">
+          <img id="photoPreview"
+               src="" alt=""
+               style="display:none">
+          <div class="photo-placeholder"
+               id="photoPlaceholder">
+            <div class="pi">📷</div>
+            <p>Click to add photo</p>
+          </div>
+        </div>
+        <input type="file" id="photoInput"
+               accept="image/*"
+               onchange="previewPhoto(this)">
+        <div style="font-size:12px;color:#6c6f85">
+          Optional — add a profile photo
+        </div>
+      </div>
+
+      <div class="name-field">
+        <label>Your Name</label>
+        <input type="text"
+               id="nameInput"
+               value="{{ user.name }}"
+               placeholder="Enter your name">
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-next" onclick="goStep(2)">
+        Continue →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Step 2: Choose profile ── -->
+  <div class="step" id="step2">
+    <div class="step-header">
+      <span class="step-icon">🎯</span>
+      <div class="step-title">
+        Choose Your <span>Use Case</span>
+      </div>
+      <div class="step-desc">
+        Select the profile that best matches how
+        you'll use COGNITO. This sets your alert
+        thresholds and recommendations.
+      </div>
+    </div>
+
+    <div class="glass">
+      <div class="profile-grid">
+        {% for pid, p in profiles.items() %}
+        <div class="profile-option"
+             style="--c: {{ p.color }}"
+             data-profile="{{ pid }}"
+             onclick="selectProfile('{{ pid }}', this)">
+          <span class="po-icon">{{ p.icon }}</span>
+          <div class="po-name">{{ p.name }}</div>
+          <div class="po-desc">{{ p.description }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goStep(1)">
+        ← Back
+      </button>
+      <button class="btn-next" onclick="goStep(3)">
+        Continue →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Features overview ── -->
+  <div class="step" id="step3">
+    <div class="step-header">
+      <span class="step-icon">⚡</span>
+      <div class="step-title">
+        What <span>COGNITO</span> Does
+      </div>
+      <div class="step-desc">
+        Here's everything COGNITO monitors
+        in real-time using just your webcam.
+      </div>
+    </div>
+
+    <div class="glass">
+      <div class="features-list">
+        <div class="feature-row">
+          <div class="fr-icon">👁️</div>
+          <div>
+            <h3>Eye Activity Monitoring</h3>
+            <p>Tracks blink rate and eye openness
+               (EAR) to detect drowsiness and
+               fatigue in real-time.</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="fr-icon">😮</div>
+          <div>
+            <h3>Yawn Detection</h3>
+            <p>Detects yawning using mouth aspect
+               ratio (MAR) and triggers fatigue
+               alerts immediately.</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="fr-icon">👀</div>
+          <div>
+            <h3>Gaze & Head Tracking</h3>
+            <p>Monitors iris position and head
+               orientation to measure screen
+               attention and focus direction.</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="fr-icon">🧠</div>
+          <div>
+            <h3>AI Focus Classification</h3>
+            <p>Random Forest model trained on
+               9,000+ clips classifies your focus
+               as High, Medium, or Low every frame.</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="fr-icon">📊</div>
+          <div>
+            <h3>Session Analytics</h3>
+            <p>Every session is saved. View trends,
+               recommendations, and progress
+               across days, weeks and months.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goStep(2)">
+        ← Back
+      </button>
+      <button class="btn-next" onclick="goStep(4)">
+        Got it! →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Step 4: Ready ── -->
+  <div class="step" id="step4">
+    <div class="step-header">
+      <span class="step-icon">🚀</span>
+      <div class="step-title">
+        You're All <span>Set!</span>
+      </div>
+    </div>
+
+    <div class="glass" style="text-align:center">
+      <div class="welcome-name" id="welcomeName">
+        Hi, {{ user.name }}!
+      </div>
+      <div class="ready-badge">
+        ✅ Profile configured and ready
+      </div>
+
+      <div style="display:grid;
+                  grid-template-columns:1fr 1fr 1fr;
+                  gap:16px; margin-top:8px">
+        <div style="background:rgba(49,50,68,0.6);
+                    border-radius:12px; padding:16px">
+          <div style="font-size:28px;margin-bottom:6px">
+            🎯
+          </div>
+          <div style="font-size:12px;font-weight:700;
+                      color:#89b4fa;margin-bottom:4px">
+            Profile
+          </div>
+          <div style="font-size:11px;color:#6c6f85"
+               id="readyProfile">Student</div>
+        </div>
+        <div style="background:rgba(49,50,68,0.6);
+                    border-radius:12px; padding:16px">
+          <div style="font-size:28px;margin-bottom:6px">
+            📹
+          </div>
+          <div style="font-size:12px;font-weight:700;
+                      color:#a6e3a1;margin-bottom:4px">
+            Detection
+          </div>
+          <div style="font-size:11px;color:#6c6f85">
+            Webcam ready
+          </div>
+        </div>
+        <div style="background:rgba(49,50,68,0.6);
+                    border-radius:12px; padding:16px">
+          <div style="font-size:28px;margin-bottom:6px">
+            💾
+          </div>
+          <div style="font-size:12px;font-weight:700;
+                      color:#cba6f7;margin-bottom:4px">
+            Storage
+          </div>
+          <div style="font-size:11px;color:#6c6f85">
+            Sessions saved
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-back" onclick="goStep(3)">
+        ← Back
+      </button>
+      <button class="btn-next"
+              onclick="completeOnboarding()">
+        🚀 Start Using COGNITO
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentStep    = 1;
+let selectedProfile = '{{ user.default_profile or "student" }}';
+const totalSteps   = 4;
+
+// ── Step navigation ──────────────────────────────────────────────
+function goStep(n) {
+  if (n === 2) {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) {
+      document.getElementById('nameInput').focus();
+      document.getElementById('nameInput').style.borderColor='#f38ba8';
+      return;
+    }
+    document.getElementById('nameInput').style.borderColor='';
+    document.getElementById('welcomeName').textContent =
+      'Hi, ' + name + '!';
+  }
+
+  document.getElementById('step'+currentStep)
+    .classList.remove('active');
+  document.getElementById('step'+n)
+    .classList.add('active');
+
+  // Update progress dots
+  for(let i=1; i<=totalSteps; i++) {
+    const dot = document.getElementById('dot'+i);
+    const lbl = document.getElementById('lbl'+i);
+    dot.classList.remove('active','done');
+    lbl.classList.remove('active');
+    if (i < n)      { dot.classList.add('done');
+                      dot.textContent='✓'; }
+    else if (i===n) { dot.classList.add('active');
+                      dot.textContent=i;
+                      lbl.classList.add('active'); }
+    else            { dot.textContent=i; }
+  }
+
+  // Update lines
+  for(let i=1; i<totalSteps; i++) {
+    const line = document.getElementById('line'+i);
+    line.classList.toggle('done', i < n);
+  }
+
+  currentStep = n;
+}
+
+// ── Profile selection ────────────────────────────────────────────
+function selectProfile(pid, el) {
+  document.querySelectorAll('.profile-option')
+    .forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedProfile = pid;
+
+  const names = {
+    student:'Student', worker:'Remote Worker',
+    driver:'Driver',   gamer:'Gamer',
+    medical:'Medical Pro', athlete:'Athlete'
+  };
+  document.getElementById('readyProfile').textContent =
+    names[pid] || pid;
+}
+
+// ── Photo preview ────────────────────────────────────────────────
+function previewPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img  = document.getElementById('photoPreview');
+    const ph   = document.getElementById('photoPlaceholder');
+    img.src    = e.target.result;
+    img.style.display = 'block';
+    ph.style.display  = 'none';
+  };
+  reader.readAsDataURL(input.files[0]);
+
+  // Upload photo
+  const fd = new FormData();
+  fd.append('photo', input.files[0]);
+  fetch('/api/upload_photo', {
+    method:'POST', body:fd
+  });
+}
+
+// ── Complete onboarding ──────────────────────────────────────────
+async function completeOnboarding() {
+  await fetch('/api/complete_onboarding', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ profile: selectedProfile })
+  });
+
+  // Update name
+  const name = document.getElementById('nameInput').value.trim();
+  await fetch('/api/update_profile', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name })
+  });
+
+  window.location.href = '/';
+}
+
+// ── Pre-select default profile ───────────────────────────────────
+window.onload = () => {
+  const def = document.querySelector(
+    `[data-profile="${selectedProfile}"]`);
+  if (def) def.classList.add('selected');
+};
+</script>
+</body>
+</html>

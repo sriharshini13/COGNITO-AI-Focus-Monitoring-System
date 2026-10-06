@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0">
+<title>COGNITO — Leaderboard</title>
+<style>
+* { margin:0; padding:0;
+    box-sizing:border-box; }
+body {
+  font-family:'Segoe UI',sans-serif;
+  background:#0f0f1a;
+  color:#cdd6f4;
+  min-height:100vh;
+}
+nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(15,15,26,.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid
+    rgba(69,71,90,.4);
+  padding:0 24px; height:56px;
+  display:flex; align-items:center;
+  justify-content:space-between;
+}
+.nav-logo {
+  font-size:18px; font-weight:900;
+  color:#89b4fa; letter-spacing:3px;
+  text-decoration:none;
+}
+.nav-links { display:flex; gap:3px; }
+.nav-link {
+  padding:6px 12px; border-radius:7px;
+  color:#6c6f85; text-decoration:none;
+  font-size:12px; transition:all .2s;
+}
+.nav-link:hover,
+.nav-link.active {
+  background:rgba(137,180,250,.1);
+  color:#89b4fa;
+}
+.nav-user {
+  display:flex; align-items:center;
+  gap:7px; padding:4px 10px 4px 5px;
+  background:rgba(49,50,68,.5);
+  border:1px solid rgba(69,71,90,.4);
+  border-radius:99px;
+  text-decoration:none; font-size:12px;
+  color:#cdd6f4;
+}
+.nav-av {
+  width:26px; height:26px;
+  border-radius:50%;
+  background:linear-gradient(
+    135deg,#89b4fa,#cba6f7);
+  display:flex; align-items:center;
+  justify-content:center;
+  font-size:11px; font-weight:700;
+  color:#1e1e2e; overflow:hidden;
+}
+.nav-av img {
+  width:100%; height:100%;
+  object-fit:cover;
+}
+
+.page {
+  max-width:800px;
+  margin:0 auto;
+  padding:32px 20px 60px;
+}
+.page-title {
+  font-size:26px; font-weight:800;
+  text-align:center; color:#89b4fa;
+  margin-bottom:6px;
+}
+.page-sub {
+  font-size:13px; color:#6c6f85;
+  text-align:center; margin-bottom:32px;
+}
+
+/* ── Top 3 podium ── */
+.podium {
+  display:flex; justify-content:center;
+  align-items:flex-end; gap:14px;
+  margin-bottom:36px;
+}
+.pod {
+  text-align:center; flex:1;
+  max-width:160px;
+}
+.pod-av {
+  width:64px; height:64px;
+  border-radius:50%; margin:0 auto 10px;
+  display:flex; align-items:center;
+  justify-content:center;
+  font-size:24px; font-weight:800;
+  color:#1e1e2e; overflow:hidden;
+  border:3px solid transparent;
+}
+.pod-av img {
+  width:100%; height:100%;
+  object-fit:cover;
+}
+.pod.rank1 .pod-av {
+  width:80px; height:80px;
+  border-color:#f9e2af;
+  box-shadow:0 0 20px
+    rgba(249,226,175,.3);
+}
+.pod.rank2 .pod-av {
+  border-color:#cdd6f4;
+}
+.pod.rank3 .pod-av {
+  border-color:#fab387;
+}
+.pod-crown {
+  font-size:22px; margin-bottom:4px;
+}
+.pod-name {
+  font-size:13px; font-weight:700;
+  color:#cdd6f4; margin-bottom:2px;
+}
+.pod-pts {
+  font-size:11px; font-weight:600;
+}
+.pod-base {
+  margin-top:10px; border-radius:10px 10px 0 0;
+  padding:10px 0;
+}
+.pod.rank1 .pod-base {
+  background:rgba(249,226,175,.15);
+  border:1px solid rgba(249,226,175,.2);
+  height:70px;
+}
+.pod.rank2 .pod-base {
+  background:rgba(205,214,244,.08);
+  border:1px solid rgba(205,214,244,.15);
+  height:52px;
+}
+.pod.rank3 .pod-base {
+  background:rgba(250,179,135,.08);
+  border:1px solid rgba(250,179,135,.15);
+  height:40px;
+}
+
+/* ── Table ── */
+.lb-table {
+  background:rgba(30,30,46,.8);
+  border:1px solid rgba(69,71,90,.4);
+  border-radius:14px;
+  overflow:hidden;
+}
+.lb-row {
+  display:flex; align-items:center;
+  gap:14px; padding:14px 18px;
+  border-bottom:1px solid
+    rgba(69,71,90,.3);
+  transition:background .2s;
+}
+.lb-row:last-child {
+  border-bottom:none;
+}
+.lb-row:hover {
+  background:rgba(49,50,68,.4);
+}
+.lb-row.me {
+  background:rgba(137,180,250,.07);
+  border-left:3px solid #89b4fa;
+}
+.lb-rank {
+  font-size:16px; font-weight:800;
+  width:32px; text-align:center;
+  flex-shrink:0;
+}
+.r1 { color:#f9e2af; }
+.r2 { color:#cdd6f4; }
+.r3 { color:#fab387; }
+.lb-av {
+  width:38px; height:38px;
+  border-radius:50%; flex-shrink:0;
+  background:linear-gradient(
+    135deg,#89b4fa,#cba6f7);
+  display:flex; align-items:center;
+  justify-content:center;
+  font-size:15px; font-weight:700;
+  color:#1e1e2e; overflow:hidden;
+}
+.lb-av img {
+  width:100%; height:100%;
+  object-fit:cover;
+}
+.lb-info { flex:1; min-width:0; }
+.lb-name {
+  font-size:14px; font-weight:700;
+  color:#cdd6f4;
+}
+.lb-user {
+  font-size:11px; color:#6c6f85;
+}
+.lb-sessions {
+  font-size:11px; color:#6c6f85;
+  text-align:center; width:70px;
+  flex-shrink:0;
+}
+.lb-pts {
+  font-size:18px; font-weight:800;
+  color:#89b4fa; width:80px;
+  text-align:right; flex-shrink:0;
+}
+.lb-pts-lbl {
+  font-size:9px; color:#6c6f85;
+  font-weight:400;
+}
+
+.empty {
+  text-align:center; padding:48px;
+  color:#6c6f85;
+}
+.empty .ei { font-size:40px;
+  margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">COGNITO</a>
+  <div class="nav-links">
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link"
+       href="/dashboard">Dashboard</a>
+    <a class="nav-link"
+       href="/report">Reports</a>
+    <a class="nav-link active"
+       href="/leaderboard">🏆 Leaderboard</a>
+  </div>
+  <a class="nav-user" href="/profile">
+    <div class="nav-av">
+      {% if user and user.photo %}
+        <img src="{{ user.photo }}" alt="">
+      {% else %}
+        {{ user.name[0].upper()
+           if user else 'U' }}
+      {% endif %}
+    </div>
+    {{ user.name.split()[0]
+       if user else 'User' }}
+  </a>
+</nav>
+
+<div class="page">
+  <div class="page-title">
+    🏆 Leaderboard
+  </div>
+  <div class="page-sub">
+    Earn points by completing
+    focused sessions and answering
+    quizzes
+  </div>
+
+  {% if board %}
+
+  <!-- Podium top 3 -->
+  {% if board|length >= 3 %}
+  <div class="podium">
+
+    <!-- 2nd -->
+    <div class="pod rank2">
+      <div class="pod-crown">🥈</div>
+      <div class="pod-av"
+           style="background:linear-gradient(
+             135deg,#cdd6f4,#9399b2)">
+        {% if board[1].photo %}
+          <img src="{{ board[1].photo }}"
+               alt="">
+        {% else %}
+          {{ board[1].name[0].upper() }}
+        {% endif %}
+      </div>
+      <div class="pod-name">
+        {{ board[1].name.split()[0] }}
+      </div>
+      <div class="pod-pts"
+           style="color:#cdd6f4">
+        {{ board[1].total_points }} pts
+      </div>
+      <div class="pod-base"></div>
+    </div>
+
+    <!-- 1st -->
+    <div class="pod rank1">
+      <div class="pod-crown">👑</div>
+      <div class="pod-av"
+           style="background:linear-gradient(
+             135deg,#f9e2af,#fab387)">
+        {% if board[0].photo %}
+          <img src="{{ board[0].photo }}"
+               alt="">
+        {% else %}
+          {{ board[0].name[0].upper() }}
+        {% endif %}
+      </div>
+      <div class="pod-name">
+        {{ board[0].name.split()[0] }}
+      </div>
+      <div class="pod-pts"
+           style="color:#f9e2af">
+        {{ board[0].total_points }} pts
+      </div>
+      <div class="pod-base"></div>
+    </div>
+
+    <!-- 3rd -->
+    <div class="pod rank3">
+      <div class="pod-crown">🥉</div>
+      <div class="pod-av"
+           style="background:linear-gradient(
+             135deg,#fab387,#f38ba8)">
+        {% if board[2].photo %}
+          <img src="{{ board[2].photo }}"
+               alt="">
+        {% else %}
+          {{ board[2].name[0].upper() }}
+        {% endif %}
+      </div>
+      <div class="pod-name">
+        {{ board[2].name.split()[0] }}
+      </div>
+      <div class="pod-pts"
+           style="color:#fab387">
+        {{ board[2].total_points }} pts
+      </div>
+      <div class="pod-base"></div>
+    </div>
+
+  </div>
+  {% endif %}
+
+  <!-- Full table -->
+  <div class="lb-table">
+    {% for u in board %}
+    <div class="lb-row {% if
+         current_user and
+         u.username ==
+         current_user.username
+         %}me{% endif %}">
+
+      <div class="lb-rank
+           {% if u.rank == 1 %}r1{%
+           elif u.rank == 2 %}r2{%
+           elif u.rank == 3 %}r3{%
+           endif %}">
+        {% if u.rank == 1 %}👑{%
+        elif u.rank == 2 %}🥈{%
+        elif u.rank == 3 %}🥉{%
+        else %}{{ u.rank }}{% endif %}
+      </div>
+
+      <div class="lb-av">
+        {% if u.photo %}
+          <img src="{{ u.photo }}" alt="">
+        {% else %}
+          {{ u.name[0].upper() }}
+        {% endif %}
+      </div>
+
+      <div class="lb-info">
+        <div class="lb-name">
+          {{ u.name }}
+          {% if current_user and
+             u.username ==
+             current_user.username %}
+          <span style="font-size:10px;
+            color:#89b4fa;
+            font-weight:600">
+            (you)
+          </span>
+          {% endif %}
+        </div>
+        <div class="lb-user">
+          @{{ u.username }}
+        </div>
+      </div>
+
+      <div class="lb-sessions">
+        {{ u.total_sessions }}<br>
+        <span style="font-size:9px">
+          sessions
+        </span>
+      </div>
+
+      <div class="lb-pts">
+        {{ u.total_points }}
+        <div class="lb-pts-lbl">pts</div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top:20px;
+       text-align:center;
+       font-size:11px; color:#45475a">
+    Points: +2 per productivity score
+    point &nbsp;·&nbsp;
+    +1 per high focus %
+    &nbsp;·&nbsp;
+    +10 per correct quiz answer
+    &nbsp;·&nbsp;
+    +100 for grade A
+  </div>
+
+  {% else %}
+  <div class="empty">
+    <div class="ei">🏆</div>
+    <p>No users on the board yet.<br>
+       Complete a session to appear here!
+    </p>
+  </div>
+  {% endif %}
+</div>
+
+</body>
+</html>
